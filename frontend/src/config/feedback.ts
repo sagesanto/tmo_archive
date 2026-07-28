@@ -1,0 +1,1 @@
+export const feedbackUrl = "https://forms.gle/NZmDz6kgjZXjoVTF8"    

@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "target": "ES6",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "baseUrl": "./src",
+        "paths": {
+            "@api/*": ["api/*"],
+            "@config/*": ["config/*"],
+            "@components/*": ["components/*"],
+            "@assets/*": ["assets/*"],
+            "@hooks/*": ["hooks/*"],
+            "@state/*": ["state/*"],
+            "@utils/*": ["utils/*"],
+        }
+    }
+}

@@ -1,0 +1,16 @@
+# for dev, just run postgres
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: neo_view
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # - ./init-neoview-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
+
+volumes:
+  pgdata:

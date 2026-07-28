@@ -1,0 +1,6 @@
+[project]
+name = "neo_view_backend"
+version = "0.0.1"
+
+[tool.setuptools.packages.find]
+where = ["."]

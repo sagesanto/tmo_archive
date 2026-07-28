@@ -1,0 +1,1 @@
+# details derived from actuall opening the sqlite3 database
