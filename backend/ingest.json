@@ -1,0 +1,18 @@
+{
+    "obs": [
+        {
+            "dir": "/home/sage/tmo_observing/tmo_obs/tess_processing/ex_TESS_dir",
+            "pattern": "Metadata.db"
+        },
+        {
+            "dir": "/home/sage/neo_view/backend/testing/",
+            "pattern": "Metadata.db"
+        }
+    ],
+    "results": [
+        {
+            "dir": "/home/sage/neo_view/backend/testing",
+            "pattern": "NEO_20260516.db"
+        }
+    ]
+}

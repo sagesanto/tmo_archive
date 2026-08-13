@@ -35,11 +35,11 @@ import NotFound from "./pages/404"
 // import Proposals from './pages/proposals'
 import Objects from './pages/objects'
 import ResultsDBs from './pages/results_dbs'
-import Datasets from './pages/datasets'
+import Observations from './pages/observations'
 import Analyses from './pages/analyses'
 import AnalysisDetail from './pages/analysis_detail'
 import ResultsDBDetail from './pages/results_db_detail'
-import DatasetDetail from './pages/dataset_detail'
+import ObservationDetail from './pages/observation_detail'
 // import Changelog from './pages/changelog'
 // import NotFound from "./pages/404"
 // import Admin from './pages/admin'
@@ -86,9 +86,9 @@ createRoot(document.getElementById('root')).render(
 												<Route index element={<ResultsDBs />} />
 												<Route path=":natural_key" element={<ResultsDBDetail />} />
 											</Route>
-											<Route path={AppRoutes.datasets}>
-												<Route index element={<Datasets />} />
-												<Route path=":natural_key" element={<DatasetDetail />} />
+											<Route path={AppRoutes.observations}>
+												<Route index element={<Observations />} />
+												<Route path=":natural_key" element={<ObservationDetail />} />
 											</Route>
 											{/* <Route path={AppRoutes.proposals}>
 												<Route index element={<Proposals />} />

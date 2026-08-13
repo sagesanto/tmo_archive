@@ -15,8 +15,8 @@ def results_db_key(path: str) -> Tuple[str,str]:
     name = h[:HASH_LEN]
     return key,name
 
-def dataset_key(acq_system_id: int, acq_timestamp: int, acq_num_1: int, acq_num_2: int) -> Tuple[str,str]:
-    key = f"ds{KEY_SEP}{acq_system_id}:{acq_timestamp}:{acq_num_1}:{acq_num_2}"
+def obs_key(acq_system_id: int, acq_timestamp: int, acq_num_1: int, acq_num_2: int) -> Tuple[str,str]:
+    key = f"obs{KEY_SEP}{acq_system_id}:{acq_timestamp}:{acq_num_1}:{acq_num_2}"
     date = datetime.fromtimestamp(acq_timestamp,timezone.utc).strftime("%Y%m%d")
     h = hashlib.sha256(key.encode()).hexdigest()[:HASH_LEN]
     name = f"{date}-{h}"

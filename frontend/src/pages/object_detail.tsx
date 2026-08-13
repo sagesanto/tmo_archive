@@ -5,13 +5,17 @@ import { OpenInNew } from '@mui/icons-material'
 import image_defaults from '@config/image_defaults';
 import { ObjectIcon, HomeIcon, AnalysisIcon, CutoutIcon, ProposalIcon, FlagIcon } from '@assets/icons';
 import { getObject, Object } from '@api/object';
+import { getFlags } from '@api/flag';
+import { getMPCEncounter, SingleEncounterParams } from '@api/mpc_encounter';
 import { AnalysisChip } from '@components/analyses';
 import { ResultsDBChip } from '@components/results_dbs';
-import { DatasetChip } from '@components/datasets';
+import { ObservationChip } from '@components/observations';
 import { ClassificationChip } from '@components/objects/classification_chip';
+import { FlagChip } from '@components/objects/flag_chip';
 import { formatTimestamp, formatRA, formatDec } from '@utils/formatters';
 import { ErrorMessage } from '@components/general/error';
 import { ObjectSyntheticImage } from '@components/images';
+import { MPCChip } from '@components/mpc/candidate_chip';
 // import { useDispatch, useSelector } from 'react-redux';
 // import cutout_defaults from '@config/cutout_defaults';
 // import { removeDetailCutoutGroup, setDetailCutoutGroup } from '@state/uiSlice';
@@ -27,13 +31,15 @@ function StatRow({ label, value }: { label: string, value: React.ReactNode }) {
 
 export function ObjectDetailPage() {
     let params = useParams();
-    let natural_key = params.natural_key;
+    let natural_key = params.natural_key!;
     // const groups = useSelector((state) => state.detailCutouts.groups)
     // let dispatch = useDispatch()
 
     let navigate = useNavigate();
-
+    // const mpc_params: SingleEncounterParams = {object_key: }
     const { data: object, isLoading, isError, error } = getObject(natural_key);
+    const { data: mpc, mpcIsLoading, mpcIsError, mpcError } = getMPCEncounter({object_key: natural_key});
+    const { data: allFlags } = getFlags();
 
     // const { data: flags, flagLoading, flagError } = getFlagsByObject(oid);
 
@@ -52,6 +58,9 @@ export function ObjectDetailPage() {
             <> </>
         )
     }
+    if (mpc){
+        console.log(mpc)
+    }
 
     if (isError) {
         document.title = "Object not found";
@@ -67,19 +76,30 @@ export function ObjectDetailPage() {
 
     return (
         <Stack spacing={3} sx={{ width: '100%', padding: 3 }}>
-            <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
+            <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} justifyContent={"center"} sx={{ width: '100%', flexWrap: 'wrap' }}>
                 <ObjectIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                 <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}>{object?.display_name}</Typography>
+                {object?.classification && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+                        <ClassificationChip classification={object.classification} />
+                    </Box>
+                )}
+                {object?.flags?.map((flag) => (
+                    <Box key={flag.id} sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+                        <FlagChip flag={flag} objectKey={object.natural_key} />
+                    </Box>
+                ))}
             </Stack>
 
             <Stack direction="row" spacing={1} alignItems={'center'}>
-                {object?.classification && <ClassificationChip classification={object.classification} />}
+                {mpc && <MPCChip designation={mpc?.designation ?? ''} />}
                 <AnalysisChip natural_key={object.analysis_run_key ?? ''} />
                 <ResultsDBChip natural_key={object.results_db_key ?? ''} />
-                <DatasetChip natural_key={object?.dataset_key ?? ''} />
+                <ObservationChip natural_key={object?.observation_key ?? ''} />
             </Stack>
 
-            <Card elevation={3} sx={{ width: '100%', padding: 3, borderRadius: 2 }}>
+
+            {/* <Card elevation={3} sx={{ width: '100%', padding: 3, borderRadius: 2 }}> */}
                 <Stack direction="row" spacing={4} alignItems="flex-start">
                     <Box sx={{ width: image_defaults.thumbnail_size, flexShrink: 0, borderRadius: 1, overflow: 'hidden', border: (theme) => `1px solid ${theme.palette.divider}` }}>
                         <ObjectSyntheticImage object_key={object?.natural_key} />
@@ -95,8 +115,9 @@ export function ObjectDetailPage() {
                         }}>
                             <StatRow label="SNR" value={object?.snr.toFixed(2)} />
                             <StatRow label="Magnitude" value={object?.magnitude?.toFixed(2) ?? "None"} />
-                            <StatRow label="Velocity (RA / DEC)" value={`${object?.v_ra ? object.v_ra.toFixed(4) : "None"}"/s | ${object?.v_dec ? object.v_dec.toFixed(4) : "None"}"/s`} />
-                            <StatRow label="Position (RA / DEC)" value={`${formatRA(object?.ra ?? 0)} | ${formatDec(object?.dec ?? 0)}`} />
+                            <StatRow label="Velocity" value={`${object?.v_ra ? object.v_ra.toFixed(4) : "None"}"/s | ${object?.v_dec ? object.v_dec.toFixed(4) : "None"}"/s`} />
+                            <StatRow label="Expected Velocity" value={`${mpc?.d_ra ? mpc.d_ra.toFixed(4) : "None"}"/s | ${mpc?.d_dec ? mpc.d_dec.toFixed(4) : "None"}"/s`} />
+                            <StatRow label="Position" value={`${formatRA(object?.ra ?? 0)} | ${formatDec(object?.dec ?? 0)}`} />
                             <StatRow label="Frames / Children" value={`${object?.num_frames} / ${object?.cluster_children}`} />
                         </Box>
                         <Button
@@ -111,11 +132,23 @@ export function ObjectDetailPage() {
                         </Button>
                     </Stack>
                 </Stack>
-            </Card>
+            {/* </Card> */}
 
+        <Divider sx={{ width: '100%' }} />
+        <Card elevation={3} sx={{ width: '100%', padding: 3, borderRadius: 2 }}>
 
-
+            {allFlags && allFlags.length > 0 && (
+                <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} sx={{ width: '100%', flexWrap: 'wrap' }}>
+                    {allFlags.map((flag) => {
+                        const attached = object.flags?.find((f) => f.id === flag.id);
+                        return <FlagChip key={flag.id} flag={attached ?? flag} objectKey={object.natural_key} />;
+                    })}
+                </Stack>
+            )}
+        </Card>
             <Divider sx={{ width: '100%' }} />
+
+
             <Typography variant='subtitle2' color='text.secondary'>
                 {`Analyzed: ${formatTimestamp(object?.analysis_time)} UT | Observed: ${formatTimestamp(object?.obs_time)}`}
             </Typography>

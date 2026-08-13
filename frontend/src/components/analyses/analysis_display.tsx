@@ -12,7 +12,7 @@ const STATUSES = ["Idle", "Waiting", "Running", "Complete", "Aborted", "Error"];
 const SORT_LABELS = ["Newest Analyzed", "Oldest Analyzed", "Newest Observed", "Oldest Observed", "Name"];
 const SORT_PARAMS = ["analysis_time_desc", "analysis_time_asc", "obs_time_desc", "obs_time_asc", "name"];
 
-export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onStatusFilterChange, datasetId, resultsDbId }: { title?: string, statusFilter?: string | null, onStatusFilterChange?: (status: string | null) => void, datasetId?: number, resultsDbId?: number }) {
+export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onStatusFilterChange, observationId, resultsDbId }: { title?: string, statusFilter?: string | null, onStatusFilterChange?: (status: string | null) => void, observationId?: number, resultsDbId?: number }) {
     const { ref, inView } = useInView()
 
     const [sortIndex, setSortIndex] = useState(0);
@@ -22,10 +22,10 @@ export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onSta
 
     const params = useMemo(() => ({
         status: activeStatusFilter,
-        dataset_id: datasetId,
+        observation_id: observationId,
         results_db_id: resultsDbId,
         sort: SORT_PARAMS[sortIndex],
-    }), [activeStatusFilter, datasetId, resultsDbId, sortIndex]);
+    }), [activeStatusFilter, observationId, resultsDbId, sortIndex]);
 
     const { data: pages, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = getAnalyses(params);
 
@@ -51,10 +51,12 @@ export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onSta
 
     const header = (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'center'} flexGrow={14}>
-                <AnalysisIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
-                <Typography variant='h4'> {title} </Typography>
-                <CollectionLengthChip length={analyses.length} tooltip="Analyses loaded" />
+            <Stack direction="row" spacing={2} alignItems={'center'} justifyContent={"center"} flexGrow={14}>
+                <AnalysisIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
+                <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {title} </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+                    <CollectionLengthChip length={analyses.length} tooltip="Analyses loaded" />
+                </Box>
             </Stack>
             {controls}
         </Box>

@@ -4,7 +4,7 @@ import { AnalysisDisplay } from "@components/analyses";
 import { ObjectDisplay } from "@components/objects/object_display";
 import { Object } from "@api/object";
 
-export function RunObjectTabs({ datasetId, resultsDbId }: { datasetId?: number, resultsDbId?: number }) {
+export function RunObjectTabs({ observationId, resultsDbId }: { observationId?: number, resultsDbId?: number }) {
     const [tab, setTab] = useState(0);
     const [selectedObj, setSelectedObj] = useState<Object[]>([]);
 
@@ -15,8 +15,8 @@ export function RunObjectTabs({ datasetId, resultsDbId }: { datasetId?: number, 
                 <Tab label="Objects" />
             </Tabs>
             <Box sx={{ width: '100%', flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column', paddingTop: '1em' }}>
-                {tab === 0 && <AnalysisDisplay title="Analyses" datasetId={datasetId} resultsDbId={resultsDbId} />}
-                {tab === 1 && <ObjectDisplay title="Objects" datasetId={datasetId} resultsDbId={resultsDbId} selected={selectedObj} setSelected={setSelectedObj} />}
+                {tab === 0 && <AnalysisDisplay title="Analyses" observationId={observationId} resultsDbId={resultsDbId} />}
+                {tab === 1 && <ObjectDisplay title="Objects" observationId={observationId} resultsDbId={resultsDbId} selected={selectedObj} setSelected={setSelectedObj} />}
             </Box>
         </Box>
     );

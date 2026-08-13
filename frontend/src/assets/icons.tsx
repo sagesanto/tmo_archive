@@ -1,5 +1,5 @@
 import theme from '@config/theme';
-import { AccountCircle, Download, Downloading, Sick, Error, ListAlt, Flare, Home, Satellite, List, GridView, Flag, SatelliteAlt, Cancel, EditSquare, CancelOutlined, HighlightOff, HighlightOffOutlined, HighlightOffSharp, DoNotDisturb, DoNotDisturbOn, Close, Lens, Add, AdminPanelSettings, Storage, Image as DatasetIconBase } from '@mui/icons-material'
+import { AccountCircle, Download, Downloading, Sick, Error, ListAlt, Flare, Home, Satellite, List, GridView, Flag, SatelliteAlt, Cancel, EditSquare, CancelOutlined, HighlightOff, HighlightOffOutlined, HighlightOffSharp, DoNotDisturb, DoNotDisturbOn, Close, Lens, Add, AdminPanelSettings, Storage, Image, Analytics } from '@mui/icons-material'
 import { Box, createSvgIcon, Icon } from '@mui/material'
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { Fragment } from 'react/jsx-runtime';
@@ -8,7 +8,8 @@ import { EditOutlined } from '@mui/icons-material';
 
 export const UserIcon = AccountCircle;
 export const UserErrorIcon = Sick;
-export const AnalysisIcon = ListAlt;
+export const AnalysisIcon = Analytics;
+// export const AnalysisIcon = ListAlt;
 export const ObjectIcon = Flare;
 export const CutoutIcon = Satellite;
 export const FlagIcon = Flag;
@@ -20,7 +21,7 @@ export const DownloadActiveIcon = Downloading;
 export const ErrorIcon = Error;
 export const AdminIcon = AdminPanelSettings;
 export const ResultsDBIcon = Storage;
-export const DatasetIcon = DatasetIconBase;
+export const ObservationIcon = Image;
 
 function DeleteFlagIconMaker() {
   return (
@@ -118,4 +119,26 @@ export const HomeIcon = createSvgIcon(
     fill="currentColor"
   />,
   "Cat"
+);
+
+// export const MPCIcon = createSvgIcon(
+//   <path
+//     fillRule='evenodd'
+//     clipRule='evenodd'
+//     d="M9,24a8.971,8.971,0,0,1-6.364-2.632h0a9.01,9.01,0,0,1,0-12.728C4.892,6.38,9.816,3.108,12.55,1.358A2.242,2.242,0,0,1,16,3.24l4.86-2.9a2.023,2.023,0,0,1,2.533.283,2.034,2.034,0,0,1,.279,2.564L20.771,8a2.242,2.242,0,0,1,1.871,3.449c-1.748,2.734-5.019,7.655-7.278,9.915A8.971,8.971,0,0,1,9,24ZM4.05,19.95a7.009,7.009,0,0,0,9.9,0c2.125-2.126,5.3-6.914,7.007-9.579a.229.229,0,0,0,.009-.245A.232.232,0,0,0,20.751,10H19a1,1,0,0,1-.856-1.517l3.832-6.349-.028-.111L15.512,5.859A1,1,0,0,1,14,5V3.249a.241.241,0,0,0-.372-.206C10.962,4.749,6.172,7.928,4.05,10.05a7.01,7.01,0,0,0,0,9.9ZM9,19c-5.275-.138-5.273-7.863,0-8C14.275,11.138,14.273,18.863,9,19Zm0-6a2,2,0,0,0,0,4A2,2,0,0,0,9,13Z"
+//     fill="currentColor"
+//   />,
+//   "Meteor"
+// );
+
+// "M11,15a2,2,0,0,1-4,0A2,2,0,0,1,11,15ZM23.672,3.191,20.771,8a2.242,2.242,0,0,1,1.871,3.449c-1.748,2.734-5.019,7.655-7.278,9.915A9,9,0,0,1,2.636,8.636C4.892,6.38,9.816,3.108,12.55,1.358A2.242,2.242,0,0,1,16,3.24l4.86-2.9a2.023,2.023,0,0,1,2.533.283A2.034,2.034,0,0,1,23.672,3.191ZM13,15c-.138-5.275-7.863-5.274-8,0C5.138,20.275,12.863,20.274,13,15Z"
+
+export const MPCIcon = createSvgIcon(
+  <path
+    fillRule='evenodd'
+    clipRule='evenodd'
+    d="M11,15a2,2,0,0,1-4,0A2,2,0,0,1,11,15ZM23.672,3.191,20.771,8a2.242,2.242,0,0,1,1.871,3.449c-1.748,2.734-5.019,7.655-7.278,9.915A9,9,0,0,1,2.636,8.636C4.892,6.38,9.816,3.108,12.55,1.358A2.242,2.242,0,0,1,16,3.24l4.86-2.9a2.023,2.023,0,0,1,2.533.283A2.034,2.034,0,0,1,23.672,3.191ZM13,15c-.138-5.275-7.863-5.274-8,0C5.138,20.275,12.863,20.274,13,15Z"
+    fill="currentColor"
+  />,
+  "Meteor"
 );

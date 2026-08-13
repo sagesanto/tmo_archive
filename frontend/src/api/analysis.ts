@@ -11,8 +11,8 @@ export type Analysis = {
     natural_key: string;
     display_name: string;
     analysis_id: number;
-    dataset_id: number;
-    dataset_key: string;
+    observation_id: number;
+    observation_key: string;
     results_db_id: number;
     results_db_key: string | null;
     status: string;
@@ -57,7 +57,7 @@ function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pa
 
 export type AnalysesParams = {
     status?: string | null;
-    dataset_id?: number;
+    observation_id?: number;
     results_db_id?: number;
     sort?: string;
 }

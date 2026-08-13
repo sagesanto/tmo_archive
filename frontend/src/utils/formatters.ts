@@ -10,6 +10,10 @@ export function roundNumber(num: number, precision: number = 6): string {
     return Number( num.toPrecision(precision) ).toString();
 }
 
+export function capDecimals(num: number, maxDecimals: number = 3): string {
+    return Number(num.toFixed(maxDecimals)).toString();
+}
+
 export function formatRA(ra:number): string {
     const hours = Math.floor(ra / 15);
     const minutes = Math.floor((ra % 15) * 4);

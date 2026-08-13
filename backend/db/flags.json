@@ -1,0 +1,56 @@
+[
+    {
+        "name": "Artifact",
+        "description": "Visual artifact, like a bad pixel column",
+        "color": "error.light",
+        "category": "bad"
+    },
+    {
+        "name": "Bad Analysis",
+        "description": "Something has compromised this analysis, invalidating the objects",
+        "color": "error.light",
+        "category": "bad"
+    },
+    {
+        "name": "Bad MPC",
+        "description": "This MPC was determined to be a false positive, another object, or otherwise invalid",
+        "color": "error.light",
+        "category": "bad"
+    },
+    {
+        "name": "Bad Dataset",
+        "description": "Something has compromised this dataset, invalidating the objects",
+        "color": "error.light",
+        "category": "bad"
+    },
+    {
+        "name": "Bad",
+        "description": "Something is wrong with this object that is not encapsulated by other flags.",
+        "color": "error.light",
+        "category": "bad"
+    },
+    {
+        "name": "Wrong Velocity",
+        "description": "Not traveling with the expected velocity",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
+        "name": "Strange Location",
+        "description": "Near/in a suspicious location like a detector defect or edge",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
+        "name": "Candidate",
+        "description": "Possible detection",
+        "color": "info.light",
+        "category": "interesting"
+    },
+    {
+        "name": "Likely",
+        "description": "Likely NEO",
+        "color": "success.light",
+        "category": "good"
+    }
+]

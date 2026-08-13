@@ -1,6 +1,32 @@
 [project]
-name = "neo_view_backend"
+name = "tmo_archive"
 version = "0.0.1"
+authors = [
+    {name="Sage Santomenna", email = "sage.santomenna@gmail.com"},
+]
+dynamic = ["version"]
+requires-python = ">=3.9"
+dependencies = [
+    'astropy',
+    'fastapi',
+    'colorlog',
+    'matplotlib',
+    'numpy',
+    'pandas',
+    'python-dotenv',
+    'pytz',
+    'requests',
+    'scikit-image',
+    'scipy',
+    'seaborn',
+    'tomli',
+    'tomlkit',
+    'tqdm',
+    'rich',
+    'ccdproc',
+    'sqlalchemy'
+]
+
 
 [tool.setuptools.packages.find]
 where = ["."]

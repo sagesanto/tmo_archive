@@ -43,8 +43,10 @@ export function ResultsDBDisplay({ title = "Results Databases" }: { title?: stri
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <Stack direction="row" spacing={2} alignItems={'center'} flexGrow={14}>
                 <ResultsDBIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
-                <Typography variant='h4'> {title} </Typography>
-                <CollectionLengthChip length={results_dbs.length} tooltip="Results databases loaded" />
+                <Typography variant='h3'  sx={{ lineHeight: 1, m: 0 }}> {title} </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+                    <CollectionLengthChip length={results_dbs.length} tooltip="Results databases loaded" />
+                </Box>
             </Stack>
             {controls}
         </Box>

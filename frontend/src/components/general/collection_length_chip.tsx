@@ -7,3 +7,11 @@ export function CollectionLengthChip({ length, tooltip = "Count", sx = {} }: { l
         </Tooltip>
     )
 }
+
+export function FilteredCollectionLengthChip({ matching, total, tooltip = "Matching / Total", sx = {} }: { matching: number, total: number, tooltip?: string, sx?: object }) {
+    return (
+        <Tooltip title={tooltip}>
+            <Chip label={`${matching} / ${total}`} sx={sx} />
+        </Tooltip>
+    )
+}

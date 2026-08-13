@@ -1,3 +1,10 @@
+from db.models import BlobRef, AnalysisRun, ResultsDB, Observation, DetectedObject
+from db.database import get_record_db, reset_db
+from core.utils import to_naive_utc, write_out as _write_out
+from core.sqlite_db import SQLiteDB
+from core.syntrack_enums import Status, ObjectType, Classification
+from core.keys import results_db_key, obs_key, run_key, object_key, blob_key
+
 import os
 from os.path import dirname, exists, getmtime, getsize, join, abspath
 from datetime import datetime, timezone as dt_tz
@@ -16,12 +23,6 @@ import matplotlib.pyplot as plt
 
 from astropy.visualization import ZScaleInterval
 
-from db.models import BlobRef, AnalysisRun, ResultsDB, Dataset, DetectedObject
-from db.database import get_record_db, reset_db
-from core.utils import to_naive_utc, write_out as _write_out
-from core.sqlite_db import SqliteDB
-from core.syntrack_enums import Status, ObjectType, Classification
-from core.keys import results_db_key, dataset_key, run_key, object_key, blob_key
 
 SOURCE_TABLE_KEYS = {
     "Images": ("AnalysisID", "ImageType", "ImageIndex"),
@@ -34,11 +35,12 @@ OBJ_CLASSIFICATION_TO_INGEST = (Classification.FastMoving.value, Classification.
 THUMBNAIL_DIR = abspath(join(dirname(__file__), 'thumbnails'))
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
-logger: Optional[logging.Logger] = None
+global local_logger
+local_logger: Optional[logging.Logger] = None
 
 
 def write_out(*msg, level=logging.INFO):
-    _write_out(*msg, level=level, logger=logger)
+    _write_out(*msg, level=level, logger=local_logger)
 
 
 def blob_to_arr(blob: bytes, width: int, height: int, dtype: str = 'Single') -> np.ndarray:
@@ -54,7 +56,7 @@ def blob_to_arr(blob: bytes, width: int, height: int, dtype: str = 'Single') -> 
 
 
 def make_thumbnail(arr: np.ndarray, outpath: str, p1, p99, vmin, vmax, zscale: bool = False,
-                   longest_side_px: int = 256, cmap: str = "gray") -> str:
+                   longest_side_px: int = 512, cmap: str = "gray") -> str:
     h, w = arr.shape
 
     if not zscale:
@@ -154,7 +156,7 @@ def ingest_blob(blob, w, h, table, dtype, run_record: AnalysisRun, source_key,
     return ref
 
 
-def ingest_images(res_db: SqliteDB, run_record: AnalysisRun, thumbnail_dir: str) -> list[BlobRef]:
+def ingest_images(res_db: SQLiteDB, run_record: AnalysisRun, thumbnail_dir: str) -> list[BlobRef]:
     img_rows = res_db.query(
         'SELECT * FROM Images WHERE Data IS NOT NULL AND AnalysisID=?',
         (run_record.analysis_id,),
@@ -205,7 +207,7 @@ def build_object(row, run_record: AnalysisRun) -> DetectedObject:
     )
 
 
-def ingest_objects(db: Session, res_db: SqliteDB, run_record: AnalysisRun, thumbnail_dir: str):
+def ingest_objects(db: Session, res_db: SQLiteDB, run_record: AnalysisRun, thumbnail_dir: str):
     analysis_id = run_record.analysis_id
     obj_rows = res_db.query(
         ('SELECT * FROM Objects '
@@ -244,7 +246,7 @@ def ingest_objects(db: Session, res_db: SqliteDB, run_record: AnalysisRun, thumb
     return objects, blob_refs
 
 
-def locate_row_from_blob_record(blob_ref: BlobRef, res_db: SqliteDB):
+def locate_row_from_blob_record(blob_ref: BlobRef, res_db: SQLiteDB):
     table = blob_ref.source_table
     if table not in SOURCE_TABLE_KEYS:
         raise ValueError(f"disallowed source_table: {table!r}")
@@ -264,11 +266,11 @@ def find_existing_results_db(db: Session, nat_key: str) -> Optional[ResultsDB]:
     return db.query(ResultsDB).filter_by(natural_key=nat_key).one_or_none()
 
 
-def find_existing_dataset_record(db: Session, nat_key: str) -> Optional[Dataset]:
-    return db.query(Dataset).filter_by(natural_key=nat_key).one_or_none()
+def find_existing_obs_record(db: Session, nat_key: str) -> Optional[Observation]:
+    return db.query(Observation).filter_by(natural_key=nat_key).one_or_none()
 
 
-def build_run_record(row: dict[str, Any], res_db_record: ResultsDB, dataset: Dataset) -> AnalysisRun:
+def build_run_record(row: dict[str, Any], res_db_record: ResultsDB, observation: Observation) -> AnalysisRun:
     a_ts = row['AnalysisTime_s'] + row['AnalysisTime_ns'] * 1e-9
     analysis_dt = datetime.fromtimestamp(a_ts, tz=timezone('US/Pacific')).astimezone(timezone('UTC'))
 
@@ -285,7 +287,7 @@ def build_run_record(row: dict[str, Any], res_db_record: ResultsDB, dataset: Dat
         analysis_time=analysis_dt,
         obs_time=obs_dt,
         results_db_id=res_db_record.id,
-        dataset_id=dataset.id,
+        observation_id=observation.id,
     )
 
 
@@ -321,7 +323,9 @@ def gc_thumbnails(db):
             f.unlink()
 
 
-def ingest_db(results_path: str, force_ingest: bool = False):
+def ingest_results_db(results_path: str, logger, force_ingest: bool = False):
+    global local_logger
+    local_logger = logger
     write_out(f'Ingesting {results_path}')
     if not exists(results_path):
         return None
@@ -350,25 +354,25 @@ def ingest_db(results_path: str, force_ingest: bool = False):
         db_record.last_file_update = last_file_update
         db.flush()
 
-        with SqliteDB(results_path) as res_db:
+        with SQLiteDB(results_path) as res_db:
             run_rows = res_db.query("SELECT * FROM AnalysisResults")
             for run_row in run_rows:
                 acq = (run_row["AcqSystemID"], run_row["AcqTimestamp"],
                        run_row["AcqNum1"], run_row["AcqNum2"])
-                ds_nat_key, ds_name = dataset_key(*acq)
+                ds_nat_key, ds_name = obs_key(*acq)
 
-                dataset = find_existing_dataset_record(db, ds_nat_key)
-                if dataset is None:
-                    dataset = Dataset(
+                obs = find_existing_obs_record(db, ds_nat_key)
+                if obs is None:
+                    obs = Observation(
                         natural_key=ds_nat_key,
                         display_name=ds_name,
                         acq_system_id=acq[0], acq_timestamp=acq[1],
                         acq_num_1=acq[2], acq_num_2=acq[3],
                     )
-                    db.add(dataset)
+                    db.add(obs)
                     db.flush()
 
-                run_record = build_run_record(run_row, db_record, dataset)
+                run_record = build_run_record(run_row, db_record, obs)
                 db.add(run_record)
                 db.flush()
 
@@ -396,7 +400,9 @@ def ingest_db(results_path: str, force_ingest: bool = False):
     with get_record_db() as db:
         gc_thumbnails(db)
 
-
-if __name__ == "__main__":
+def main():
     reset_db()
-    ingest_db("/home/sage/neo_view/backend/testing/NEO_20260516.db")
+    ingest_results_db("/home/sage/neo_view/backend/testing/NEO_20260516.db")
+    
+if __name__=="__main__":
+    main()

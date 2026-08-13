@@ -16,6 +16,9 @@ def write_out(*args, level=logging.INFO, logger=None):
         logger.log(level, msg)
     else:
         print(msg)
+        
+def parse_date_obs(t_str,tz=pytz.UTC) -> datetime:
+    return datetime.strptime(t_str,DATE_OBS_FORMAT).replace(tzinfo=tz)
 
 def write_date_obs(dt:datetime, as_tz=pytz.UTC) -> str:
     if dt.tzinfo is not None:

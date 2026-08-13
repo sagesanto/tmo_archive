@@ -1,5 +1,5 @@
 export { HomeButton } from "./simple_buttons";
-export { CollectionLengthChip } from "./collection_length_chip";
+export { CollectionLengthChip, FilteredCollectionLengthChip } from "./collection_length_chip";
 export { PageFrame } from "./page_frame";
 export { DisplayChip, LoadingChip } from "./disp_chip";
 export { SplitButton } from "./split_button";
@@ -8,6 +8,7 @@ export { SortSelect } from "./sort_control";
 // export { AddFlagPopup } from "./add_flag_popups";
 export { Notifier } from "./notifications";
 export * from "./cards";
+export * from "./virtualized_card_list";
 // export * from "./selection_actions";
 // export * from "./file_upload";
 // // export {ProtectedRoute} from "./authentication"; 

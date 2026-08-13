@@ -3,9 +3,9 @@ import { Navigate, useNavigate, Outlet, NavLink, useLocation } from "react-route
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { AnalysisIcon, AdminIcon, UserIcon, ObjectIcon, FlagIcon, ProposalIcon, ResultsDBIcon, DatasetIcon } from "@assets/icons";
+import { AnalysisIcon, AdminIcon, UserIcon, ObjectIcon, FlagIcon, ProposalIcon, ResultsDBIcon, ObservationIcon } from "@assets/icons";
 import { AppRoutes } from "@config/routes";
-// import { feedbackUrl } from "@config/feedback";
+import { feedbackUrl } from "@config/feedback";
 import { CardActionArea, Stack } from "@mui/material";
 import { HomeButton } from "./simple_buttons";
 import theme from "@config/theme";
@@ -22,22 +22,22 @@ import { axios } from "@api/axios";
 const top_bar_iconsize = theme.typography.h4.fontSize;
 
 const topbar_items = [
-    { name: "Analyses", icon: <AnalysisIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.analyses },
+    { name: "Analyses", icon: <AnalysisIcon sx={{ fontSize: top_bar_iconsize, display: 'block'   }} />, route: AppRoutes.analyses },
     // { name: "Proposals", icon: <ProposalIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.proposals },
-    { name: "Objects", icon: <ObjectIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.objects },
+    { name: "Objects", icon: <ObjectIcon sx={{ fontSize: top_bar_iconsize, display: 'block'  }} />, route: AppRoutes.objects },
     // { name: "Flags", icon: <FlagIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.flags },
     // { name: "Users", icon: <UserIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.users },
-    { name: "Databases", icon: <ResultsDBIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.results_dbs },
-    { name: "Datasets", icon: <DatasetIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.datasets },
+    { name: "Observations", icon: <ObservationIcon sx={{ fontSize: top_bar_iconsize, display: 'block'  }} />, route: AppRoutes.observations },
 ];
 
 const dropdown_items = [
     // { name: "Users", icon: <UserIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.users },
     // { name: "Objects", icon: <ObjectIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.objects },
-    { name: "Changelog", icon: <DynamicForm sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.changelog },
+    { name: "Databases", icon: <ResultsDBIcon sx={{ fontSize: top_bar_iconsize, display: 'block'  }} />, route: AppRoutes.results_dbs },
+    { name: "Changelog", icon: <DynamicForm sx={{ fontSize: top_bar_iconsize, display: 'block'  }} />, route: AppRoutes.changelog },
 ]
 
-const admin_item = { name: "Admin", icon: <AdminIcon sx={{ fontSize: top_bar_iconsize }} />, route: AppRoutes.admin };
+const admin_item = { name: "Admin", icon: <AdminIcon sx={{ fontSize: top_bar_iconsize, display: 'block'  }} />, route: AppRoutes.admin };
 
 // const dispatch = useDispatch();
 export function PageFrame() {
@@ -98,7 +98,7 @@ export function PageFrame() {
                                 <NavLink to={item.route} key={item.name} style={{ textDecoration: "none", color: "inherit" }}>
                                     <Stack direction={"row"} alignItems={"center"} spacing={1} key={item.name} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                         {item.icon}
-                                        <Typography key={item.name} variant="h4">
+                                        <Typography key={item.name} sx={{ lineHeight: 1, m: 0 }} variant="h4">
                                             {item.name}
                                         </Typography>
                                     </Stack>
@@ -110,7 +110,7 @@ export function PageFrame() {
                                 <NavLink to={admin_item.route} key={admin_item.name} style={{ textDecoration: "none", color: "inherit" }}>
                                     <Stack direction={"row"} alignItems={"center"} spacing={1} key={admin_item.name} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(admin_item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                         {admin_item.icon}
-                                        <Typography key={admin_item.name} variant="h4">
+                                        <Typography key={admin_item.name} sx={{ lineHeight: 1, m: 0 }} variant="h4">
                                             {admin_item.name}
                                         </Typography>
                                     </Stack>
@@ -120,7 +120,7 @@ export function PageFrame() {
                         <CardActionArea ref={anchorRef} id={"moreClickable"} onClick={handleMoreClick} aria-haspopup="true" aria-expanded={open ? 'true' : undefined} aria-controls={open ? 'basic-menu' : undefined}>
                             <Stack direction={"row"} alignItems={"center"} spacing={1} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith("/more") ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                 <ExpandMore sx={{ fontSize: top_bar_iconsize }} />
-                                <Typography variant="h4">
+                                <Typography variant="h4" sx={{ lineHeight: 1, m: 0 }}>
                                     More
                                 </Typography>
                             </Stack>
@@ -166,7 +166,7 @@ export function PageFrame() {
             <Box color="primary" sx={{ paddingTop: `${navHeight}px`, flexDirection: "column", display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
                 <Stack direction="row" spacing={2} alignItems={'center'} sx={{ backgroundColor: (theme) => theme.palette.primary.main, width: '100%' }}>
                     <Warning sx={{ fontSize: (theme) => theme.typography.h5.fontSize, color: 'primary.contrastText' }} />
-                    <Typography variant='h5' sx={{ color: 'primary.contrastText' }}>  Alpha Version </Typography>
+                    <Typography variant='h5' sx={{ color: 'primary.contrastText',  lineHeight: 1, m: 0 }}>  Alpha Version </Typography>
                     <Typography variant='body1' sx={{ color: 'primary.contrastText', fontWeight: 'normal' }}>
                         {"This is an alpha version containing bugs and incomplete features. NEOView's stable form may look and feel different from this prototype. Feedback (More > Feedback) is strongly desired."}
                     </Typography>

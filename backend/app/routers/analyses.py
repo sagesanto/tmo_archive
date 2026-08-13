@@ -23,7 +23,7 @@ def list_analyses(
     natural_key: str | None = Query(default=None),
     status: str | None = Query(default=None),
     results_db_id: int | None = Query(default=None),
-    dataset_id: int | None = Query(default=None),
+    observation_id: int | None = Query(default=None),
     sort: str = Query(default="analysis_time_desc"),
     limit: int = Query(default=100, le=1000),
     offset: int = Query(default=0, ge=0),
@@ -39,8 +39,8 @@ def list_analyses(
         stmt = stmt.where(AnalysisRun.status == status)
     if results_db_id is not None:
         stmt = stmt.where(AnalysisRun.results_db_id == results_db_id)
-    if dataset_id is not None:
-        stmt = stmt.where(AnalysisRun.dataset_id == dataset_id)
+    if observation_id is not None:
+        stmt = stmt.where(AnalysisRun.observation_id == observation_id)
 
     stmt = stmt.limit(limit).offset(offset)
     runs = db.execute(stmt).scalars().all()

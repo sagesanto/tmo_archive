@@ -5,7 +5,7 @@ def res_rows_to_dicts(row):
     dictionary = [dict(r) for r in row if r]
     return [{k: v for k, v in a.items() if v is not None} for a in dictionary if a]
 
-class SqliteDB:
+class SQLiteDB:
     def __init__(self, db_file, check_same_thread=True, read_only=True):
         if isdir(db_file):
             db_file = join(db_file,'Metadata.db')

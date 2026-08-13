@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router';
 import { CardContainer, CollectionLengthChip, MediumLoadingCard } from '@components/general';
 import { AppRoutes } from '@config/routes';
 import { formatTimestamp, formatRA, formatDec } from '@utils/formatters';
+import { FlagChip } from './flag_chip';
 
 export function ObjectCard({ natural_key }: { natural_key: string }) {
     const { data: obj, isLoading, isError } = getObject(natural_key);
@@ -40,10 +41,15 @@ export function ObjectCardContent({ obj }: { obj: Object }) {
     return (
         <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
             <Stack direction="row" spacing={2} alignItems={'space-between'} sx={{ width: '100%'  }}>
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }}>
+                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%', minWidth: 0 }}>
                     <ObjectIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
-                    <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-                        <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {obj.display_name} </Typography>
+                    <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%', minWidth: 0 }}>
+                        <Stack direction="row" spacing={1} alignItems={'center'} justifyContent={'center'} sx={{ flexWrap: 'nowrap', overflow: 'hidden', width: '100%', minWidth: 0 }}>
+                            <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {obj.display_name} </Typography>
+                            {obj.flags?.map((flag) => (
+                                <FlagChip key={flag.id} flag={flag} />
+                            ))}
+                        </Stack>
                         <Typography variant='subtitle1'>{obj?.classification} | SNR {obj?.snr.toFixed(2)} | {obj?.cluster_children} Children | Analyzed {formatTimestamp(obj?.analysis_time)} | Observed {formatTimestamp(obj?.obs_time)}</Typography>
                         {/* <Typography variant='subtitle1'>Analyzed {formatTimestamp(obj?.analysis_time)} | Observed {formatTimestamp(obj?.obs_time)} </Typography> */}
                     </Stack>

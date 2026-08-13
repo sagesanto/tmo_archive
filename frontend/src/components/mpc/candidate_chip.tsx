@@ -1,28 +1,28 @@
-import { getDataset } from '@api/dataset';
+import { getMPCCandidate } from '@api/mpc_candidate';
 import { Chip } from '@mui/material';
-import { DatasetIcon } from '@assets/icons';
+import { MPCIcon } from '@assets/icons';
 import { useNavigate } from 'react-router';
 import { AppRoutes } from "@config/routes"
 import { DisplayChip } from '@components/general';
 
-export function DatasetChip({ natural_key }: { natural_key: string }) {
-    const { data: dataset, isLoading, isError } = getDataset(natural_key);
+export function MPCChip({ designation }: { designation: string }) {
+    const { data: mpc, isLoading, isError } = getMPCCandidate(designation);
 
     let navigate = useNavigate();
 
     if (isLoading) {
         return (
             <Chip
-                icon={<DatasetIcon />}
+                icon={<MPCIcon />}
                 label="Loading..."
             />
         );
     }
 
-    if (isError || (!isLoading && !dataset)) {
+    if (isError || (!isLoading && !mpc)) {
         return (
             <Chip
-                icon={<DatasetIcon />}
+                icon={<MPCIcon />}
                 label="Error :("
             />
         );
@@ -30,9 +30,9 @@ export function DatasetChip({ natural_key }: { natural_key: string }) {
 
     return (
         <DisplayChip
-            icon={<DatasetIcon />}
-            label={`${dataset?.display_name}`}
-            onClick={() => navigate(`${AppRoutes.datasets}/${natural_key}`)}
+            icon={<MPCIcon />}
+            label={designation}
+            onClick={() => navigate(`${AppRoutes.mpcs}/${designation}`)}
             color='secondary'
         />
     );

@@ -7,8 +7,8 @@ import { getAnalysis } from '@api/analysis';
 // import { UserChip } from '@components/users';
 import { Object } from '@api/object';
 import { ResultsDBChip } from '@components/results_dbs';
-import { DatasetChip } from '@components/datasets';
-import { StatusChip } from '@components/analyses';
+import { ObservationChip } from '@components/observations';
+import { StatusChip, MetricsDisplay } from '@components/analyses';
 import { ObjectDisplay } from '@components/objects/object_display';
 // import { getInfo, getPermissionsForRecord } from '@api/meta';
 // import { useSelector } from 'react-redux';
@@ -79,16 +79,21 @@ function AnalysisDetail() {
                 <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
                     <AnalysisIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                     <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {run_record?.display_name}</Typography>
+                    {run_record?.status && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+                            <StatusChip status={run_record.status} />
+                        </Box>
+                    )}
                 </Stack>
             </Box>
             <Grid container spacing={1} alignItems={'center'} sx={{ height: 'grow' }}>
                 <ResultsDBChip natural_key={run_record?.results_db_key ?? ''} />
-                <DatasetChip natural_key={run_record?.dataset_key ?? ''} />
-                {run_record?.status && <StatusChip status={run_record.status} />}
+                <ObservationChip natural_key={run_record?.observation_key ?? ''} />
             </Grid>
             <Typography variant='subtitle2' sx={{ marginTop: '1em' }}>
                 {`Run: ${formatTimestamp(run_record?.analysis_time)} UT | Observed: ${formatTimestamp(run_record?.obs_time)}`}
             </Typography>
+            <MetricsDisplay metrics={run_record?.metrics} />
             <Divider sx={{ width: '100%' }} />
             <ObjectDisplay
                 analysisKey={natural_key}

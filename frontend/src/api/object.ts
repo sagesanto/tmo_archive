@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { axios } from "./axios";
+import { Flag } from "./flag";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, InfiniteData, keepPreviousData } from "@tanstack/react-query";
 import { Page, offsetParams } from "./pagination";
 import pagination_config from '@config/pagination';
@@ -29,8 +30,10 @@ export type Object = {
     analysis_time: string
     analysis_run_key: string | null
     results_db_key: string | null
-    dataset_key: string
+    observation_key: string
     obs_time: string
+
+    flags: Flag[]
 }
 
 export function getObject(natural_key: string) {
@@ -41,11 +44,12 @@ export function getObject(natural_key: string) {
     });
 }
 
-function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<Object[]>>) {
+function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<Object[]>>, enabled: boolean = true) {
     return useInfiniteQuery<Page<Object[]>, Error, InfiniteData<Page<Object[]>, number>, readonly unknown[], number>({
         initialPageParam: 1,
         queryKey: queryKey,
         queryFn: queryFn,
+        enabled: enabled,
         placeholderData: keepPreviousData,
         // maxPages: pagination_config.max_in_mem / pagination_config.obj_per_page,
         getNextPageParam: (lastPage) => {
@@ -65,16 +69,32 @@ function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pa
 
 export type ObjectsParams = {
     analysis_key?: string;
-    dataset_id?: number;
+    observation_id?: number;
     results_db_id?: number;
     classification?: string | null;
     min_snr?: number | null;
+    has_flags?: number[] | null;
+    excludes_flags?: number[] | null;
+    no_flags?: boolean | null;
     sort?: string;
 }
 
-export function getObjects(params: ObjectsParams = {}) {
+export function getObjects(params: ObjectsParams = {}, enabled: boolean = true) {
     const queryKey = ["objects", params];
-    return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetObjects(pageParam, params))
+    return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetObjects(pageParam, params), enabled)
+}
+
+export function getObjectsCount(params: ObjectsParams = {}, enabled: boolean = true) {
+    const { sort, ...countParams } = params;
+    return useQuery<number, Error>({
+        queryKey: ["objects_count", countParams],
+        queryFn: async () => {
+            const { data } = await axios.get<number>(`${ENDPOINT}/count`, { params: countParams });
+            return data;
+        },
+        enabled,
+        placeholderData: keepPreviousData,
+    });
 }
 
 async function webGetObject(
