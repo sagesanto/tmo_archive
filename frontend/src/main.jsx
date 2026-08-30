@@ -40,9 +40,10 @@ import Analyses from './pages/analyses'
 import AnalysisDetail from './pages/analysis_detail'
 import ResultsDBDetail from './pages/results_db_detail'
 import ObservationDetail from './pages/observation_detail'
+import MPCDetail from './pages/mpc_detail'
 // import Changelog from './pages/changelog'
 // import NotFound from "./pages/404"
-// import Admin from './pages/admin'
+import Admin from './pages/admin'
 // import ErrorDetail from './pages/error_detail'
 
 // import CatalogDetail from './pages/catalog_detail'
@@ -66,7 +67,7 @@ createRoot(document.getElementById('root')).render(
 									<Routes>
 										<Route element={<PageFrame />}>
 											{/* <Route path={AppRoutes.home} element={<Home />} /> */}
-											{/* <Route path={AppRoutes.admin} element={<Admin />} /> */}
+											<Route path={AppRoutes.admin} element={<Admin />} />
 											{/* <Route path={AppRoutes.errors}> */}
 												{/* <Route path=":id" element={<ErrorDetail />} /> */}
 											{/* </Route> */}
@@ -89,6 +90,9 @@ createRoot(document.getElementById('root')).render(
 											<Route path={AppRoutes.observations}>
 												<Route index element={<Observations />} />
 												<Route path=":natural_key" element={<ObservationDetail />} />
+											</Route>
+											<Route path={AppRoutes.mpcs}>
+												<Route path=":designation" element={<MPCDetail />} />
 											</Route>
 											{/* <Route path={AppRoutes.proposals}>
 												<Route index element={<Proposals />} />

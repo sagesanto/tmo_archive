@@ -1,10 +1,9 @@
 [project]
-name = "tmo_archive"
-version = "0.0.1"
+name = "neo_view"
 authors = [
     {name="Sage Santomenna", email = "sage.santomenna@gmail.com"},
 ]
-dynamic = ["version"]
+version = "0.1.0"
 requires-python = ">=3.9"
 dependencies = [
     'astropy',
@@ -24,9 +23,25 @@ dependencies = [
     'tqdm',
     'rich',
     'ccdproc',
-    'sqlalchemy'
+    'sqlalchemy',
+    'beautifulsoup4',
+    'html5lib',
+    'uvicorn',
+    'psycopg[binary]',
+    'apscheduler>=3,<4'
 ]
 
 
+[project.scripts]
+tmo-ingest = "run_ingest:main"
+tmo-obs-ingest = "obs_ingest:main"
+tmo-mpc-ingest = "mpc_ingest:main"
+tmo-classify = "classification:main"
+tmo-ingest-service = "ingest_service:main"
+
 [tool.setuptools.packages.find]
 where = ["."]
+
+[tool.setuptools]
+# loose top-level scripts, not packages -- must be listed explicitly
+py-modules = ["run_ingest", "obs_ingest", "mpc_ingest", "classification", "ingest_service", "results_ingest"]

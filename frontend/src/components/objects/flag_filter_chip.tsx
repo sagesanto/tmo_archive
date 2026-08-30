@@ -3,9 +3,10 @@ import { alpha } from '@mui/material/styles';
 
 export type FilterState = 'none' | 'include' | 'exclude';
 
-// resolves a dotted mui palette path, ex. 'error.light'
+// resolves a dotted mui palette path (ex. 'error.light'); falls back to the raw value for a literal CSS color (ex. '#3A3335')
 function paletteColor(palette: any, path: string): string {
-    return path.split('.').reduce((node, key) => node?.[key], palette);
+    const resolved = path.split('.').reduce((node, key) => node?.[key], palette);
+    return typeof resolved === 'string' ? resolved : path;
 }
 
 export function FlagFilterChip({ label, description, colorPath, state, onClick }: { label: string, description?: string, colorPath: string, state: FilterState, onClick: () => void }) {

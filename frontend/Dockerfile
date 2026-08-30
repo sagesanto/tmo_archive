@@ -10,8 +10,6 @@ CMD ["npm", "run", "dev", "--", "--host"]
 FROM base AS builder
 RUN npm run build
 
-FROM node:22-alpine AS prod
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/dist ./dist
-CMD ["sh", "-c", "serve -s dist -l ${FRONTEND_PORT:-3000}"]
+FROM nginx:alpine AS prod
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -6,6 +6,22 @@ export const NO_FLAGS_KEY = 'no_flags';
 
 export type FlagFilterState = Record<string, 'include' | 'exclude'>;
 
+// url-safe serialization so filter state can live in search params
+export function encodeFlagFilters(state: FlagFilterState): string {
+    return Object.entries(state).map(([key, val]) => `${key}:${val}`).join(',');
+}
+
+export function decodeFlagFilters(raw: string | null): FlagFilterState | null {
+    if (raw === null) return null; // not present in url yet, distinct from "cleared" ({})
+    if (raw === '') return {};
+    const state: FlagFilterState = {};
+    for (const pair of raw.split(',')) {
+        const [key, val] = pair.split(':');
+        if (key && (val === 'include' || val === 'exclude')) state[key] = val;
+    }
+    return state;
+}
+
 export function FlagFilterTray({ state, onChange }: { state: FlagFilterState, onChange: (state: FlagFilterState) => void }) {
     const { data: flags } = getFlags();
 

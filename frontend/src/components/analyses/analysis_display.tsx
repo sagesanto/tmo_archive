@@ -12,7 +12,7 @@ const STATUSES = ["Idle", "Waiting", "Running", "Complete", "Aborted", "Error"];
 const SORT_LABELS = ["Newest Analyzed", "Oldest Analyzed", "Newest Observed", "Oldest Observed", "Name"];
 const SORT_PARAMS = ["analysis_time_desc", "analysis_time_asc", "obs_time_desc", "obs_time_asc", "name"];
 
-export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onStatusFilterChange, observationId, resultsDbId }: { title?: string, statusFilter?: string | null, onStatusFilterChange?: (status: string | null) => void, observationId?: number, resultsDbId?: number }) {
+export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onStatusFilterChange, observationId, resultsDbId, designation }: { title?: string, statusFilter?: string | null, onStatusFilterChange?: (status: string | null) => void, observationId?: number, resultsDbId?: number, designation?: string }) {
     const { ref, inView } = useInView()
 
     const [sortIndex, setSortIndex] = useState(0);
@@ -24,8 +24,9 @@ export function AnalysisDisplay({ title = "Analyses", statusFilter = null, onSta
         status: activeStatusFilter,
         observation_id: observationId,
         results_db_id: resultsDbId,
+        designation,
         sort: SORT_PARAMS[sortIndex],
-    }), [activeStatusFilter, observationId, resultsDbId, sortIndex]);
+    }), [activeStatusFilter, observationId, resultsDbId, designation, sortIndex]);
 
     const { data: pages, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = getAnalyses(params);
 

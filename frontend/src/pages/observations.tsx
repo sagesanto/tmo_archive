@@ -1,11 +1,10 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router';
-import { ObservationDisplay } from '@components/observations';
+import { ObservationDisplay, decodeTagFilters, encodeTagFilters, TagFilterState } from '@components/observations';
 
 export default function Observations() {
     const [searchParams, setSearchParams] = useSearchParams();
-    const obsTypesParam = searchParams.get('obs_types');
-    const obsTypesFilter = obsTypesParam ? obsTypesParam.split(',') : [];
+    const tagFilters = decodeTagFilters(searchParams.get('tags'));
 
     useEffect(() => {
         document.title = "Observations";
@@ -14,8 +13,8 @@ export default function Observations() {
     return (
         <ObservationDisplay
             title="Observations"
-            obsTypesFilter={obsTypesFilter}
-            onObsTypesFilterChange={(types) => setSearchParams(types.length ? { obs_types: types.join(',') } : {})}
+            tagFilters={tagFilters}
+            onTagFiltersChange={(state: TagFilterState) => setSearchParams(Object.keys(state).length ? { tags: encodeTagFilters(state) } : {})}
         />
     );
 }

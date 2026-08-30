@@ -2,6 +2,7 @@ import { axios } from "./axios";
 import { useInfiniteQuery, useQuery, InfiniteData, keepPreviousData } from "@tanstack/react-query";
 import { Page, offsetParams } from "./pagination";
 import pagination_config from '@config/pagination';
+import { Tag } from "./tag";
 
 const ENDPOINT = "/observations";
 
@@ -47,6 +48,8 @@ export type Observation = {
     front_housing_temp: number | null;
     rear_housing_temp: number | null;
     camera_temp: number | null;
+
+    tags: Tag[]
 }
 
 export function getObservation(natural_key: string) {
@@ -80,14 +83,32 @@ function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pa
 
 export type ObservationsParams = {
     search?: string;
-    obs_types?: string;
+    has_tags?: number[] | null;
+    excludes_tags?: number[] | null;
+    no_tags?: boolean | null;
     has_runs?: boolean;
+    designation?: string;
+    acq_after?: string;
+    acq_before?: string;
     sort?: string;
 }
 
 export function getObservations(params: ObservationsParams = {}) {
     const queryKey = ["observations", params];
     return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetObservations(pageParam, params))
+}
+
+export function getObservationsCount(params: ObservationsParams = {}, enabled: boolean = true) {
+    const { sort, ...countParams } = params;
+    return useQuery<number, Error>({
+        queryKey: ["observations_count", countParams],
+        queryFn: async () => {
+            const { data } = await axios.get<number>(`${ENDPOINT}/count`, { params: countParams });
+            return data;
+        },
+        enabled,
+        placeholderData: keepPreviousData,
+    });
 }
 
 async function webGetObservation(

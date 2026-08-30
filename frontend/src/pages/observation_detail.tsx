@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useParams } from "react-router";
-import { Container, Stack, Typography, Skeleton, Box, Divider, IconButton, Tooltip } from '@mui/material'
+import { Container, Stack, Typography, Skeleton, Grid, Box, Divider, IconButton, Tooltip } from '@mui/material'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { ObsTypeChip, ObservationInfoModal } from '@components/observations';
+import { ObservationInfoModal, TagChip } from '@components/observations';
 
 import { ObservationIcon } from '@assets/icons';
 import { getObservation } from '@api/observation';
+import { getMPCEncounter } from '@api/mpc_encounter';
 import { formatTimestamp } from '@utils/formatters';
 import { ErrorMessage } from '@components/general/error';
 import { RunObjectTabs } from '@components/general/run_object_tabs';
+import { MPCChip } from '@components/mpc/candidate_chip';
 
 function ObservationDetail() {
     let params = useParams();
@@ -17,6 +19,7 @@ function ObservationDetail() {
     const [infoOpen, setInfoOpen] = useState(false);
 
     const { data: observation, isLoading, isError, error } = getObservation(natural_key);
+    const { data: mpc } = getMPCEncounter({ observation_id: observation?.id }, Boolean(observation?.id));
 
     useEffect(() => {
         document.title = "Observation " + natural_key;
@@ -54,9 +57,6 @@ function ObservationDetail() {
                 <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
                     <ObservationIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                    {observation?.name ? <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {observation?.name}</Typography> : <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {observation?.display_name}</Typography>}
-                    <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
-                        {observation?.obs_type && <ObsTypeChip obs_type={observation?.obs_type} />}
-                    </Box>
                    <Box sx={{ flexGrow: 1 }} />
                    <Tooltip title="Observation info">
                        <IconButton onClick={() => setInfoOpen(true)}>
@@ -66,6 +66,12 @@ function ObservationDetail() {
                 </Stack>
             </Box>
             {observation && <ObservationInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} observation={observation} />}
+            <Grid container spacing={1} alignItems={'center'} sx={{ height: 'grow' }}>
+                {mpc && (<MPCChip designation={mpc.designation} />)}
+                {observation?.tags?.map((tag) => (
+                    <TagChip key={tag.id} tag={tag} toFilter />
+                ))}
+            </Grid>
             {observation?.description &&<Typography variant='subtitle1' >
                 {observation?.description}
             </Typography>}

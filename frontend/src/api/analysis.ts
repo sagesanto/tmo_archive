@@ -23,6 +23,9 @@ export type Analysis = {
 
     n_objects: number | null
     metrics: Record<string, unknown> | null
+
+    sky_mag: number | null
+    detection_limit_mag: number | null
 }
 
 export function getAnalysis(natural_key: string) {
@@ -59,12 +62,26 @@ export type AnalysesParams = {
     status?: string | null;
     observation_id?: number;
     results_db_id?: number;
+    designation?: string;
     sort?: string;
 }
 
 export function getAnalyses(params: AnalysesParams = {}) {
     const queryKey = ["analyses", params];
     return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetAnalyses(pageParam, params))
+}
+
+export function getAnalysesCount(params: AnalysesParams = {}, enabled: boolean = true) {
+    const { sort, ...countParams } = params;
+    return useQuery<number, Error>({
+        queryKey: ["analyses_count", countParams],
+        queryFn: async () => {
+            const { data } = await axios.get<number>(`${ENDPOINT}/count`, { params: countParams });
+            return data;
+        },
+        enabled,
+        placeholderData: keepPreviousData,
+    });
 }
 
 // export function getObjectsByRun(id: number) {

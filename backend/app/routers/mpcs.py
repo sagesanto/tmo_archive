@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from db.database import get_session
 from db.models import AnalysisRun, MPCEncounter, MPCCandidate, Observation, DetectedObject
-from app.schemas import MPCCandidateOverview, MPCEncounterOverview
+from app.schemas import MPCCandidateOverview, MPCEncounterOverview, MPCIdentification
 
 router = APIRouter(prefix='/mpc',tags=['mpc'])
 
@@ -71,3 +71,14 @@ def list_candidates(
     if designation is not None and not mpcs:
         raise HTTPException(status_code=404, detail="MPC not found")
     return mpcs
+
+@router.get("/info", response_model=MPCIdentification)
+def get_mpc_id(
+    designation: str = Query(...),
+    db: Session = Depends(get_session),
+):
+    # served from the DB, not a live MPC lookup -- see mpc_ingest.py
+    candidate = db.execute(select(MPCCandidate).where(MPCCandidate.designation == designation)).scalar_one_or_none()
+    if candidate is None or candidate.status is None:
+        raise HTTPException(status_code=404, detail="MPC designation not found")
+    return candidate.status

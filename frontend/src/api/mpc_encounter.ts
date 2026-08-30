@@ -22,11 +22,12 @@ export type SingleEncounterParams = {
     analysis_id?: number;
 }
 
-export function getMPCEncounter(params: SingleEncounterParams) {
+export function getMPCEncounter(params: SingleEncounterParams, enabled: boolean = true) {
     const queryKey = ["mpc_encounter", params];
     return useQuery<MPCEncounter, Error>({
         queryKey: queryKey,
         queryFn: () => webGetMPCEncounter(params),
+        enabled,
     });
 }
 

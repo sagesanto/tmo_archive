@@ -1,5 +1,41 @@
 [
     {
+        "name": "Candidate",
+        "description": "Possible detection",
+        "color": "info.light",
+        "category": "interesting"
+    },
+    {
+        "name": "Likely",
+        "description": "Likely NEO",
+        "color": "success.light",
+        "category": "good"
+    },
+    {
+        "name": "Wrong Velocity",
+        "description": "Not traveling with the expected velocity",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
+        "name": "Too Dim",
+        "description": "Object is dimmer than the detection threshold",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
+        "name": "Strange Location",
+        "description": "Near/in a suspicious location like a detector defect or edge",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
+        "name": "Ambiguous",
+        "description": "Hard to tell what's going on here",
+        "color": "warning.light",
+        "category": "warning"
+    },
+    {
         "name": "Artifact",
         "description": "Visual artifact, like a bad pixel column",
         "color": "error.light",
@@ -28,29 +64,5 @@
         "description": "Something is wrong with this object that is not encapsulated by other flags.",
         "color": "error.light",
         "category": "bad"
-    },
-    {
-        "name": "Wrong Velocity",
-        "description": "Not traveling with the expected velocity",
-        "color": "warning.light",
-        "category": "warning"
-    },
-    {
-        "name": "Strange Location",
-        "description": "Near/in a suspicious location like a detector defect or edge",
-        "color": "warning.light",
-        "category": "warning"
-    },
-    {
-        "name": "Candidate",
-        "description": "Possible detection",
-        "color": "info.light",
-        "category": "interesting"
-    },
-    {
-        "name": "Likely",
-        "description": "Likely NEO",
-        "color": "success.light",
-        "category": "good"
     }
 ]

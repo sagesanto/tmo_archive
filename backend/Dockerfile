@@ -1,11 +1,17 @@
-FROM python:3.11-slim
-
+FROM python:3.11-slim AS base
 WORKDIR /app
+RUN pip install --no-cache-dir --upgrade pip
 
-COPY common/ /app/
-COPY cutout_maker/ /app/
+# avoid reinstalling all pkgs
+COPY pyproject.toml .
+RUN python -c "import tomllib; print('\n'.join(tomllib.load(open('pyproject.toml','rb'))['project']['dependencies']))" > requirements.txt \
+    && pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN pip install --no-cache-dir --no-deps .
 
-CMD ["python", "cutout_maker.py"]
-# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:$CUTOUT_BACKEND_PORT", "cutout_maker:app"]
+FROM base AS api
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5080"]
+
+FROM base AS ingest
+CMD ["python", "ingest_service.py"]

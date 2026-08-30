@@ -25,6 +25,8 @@ export type Object = {
     v_dec: number | null
     ra: number | null
     dec: number | null
+    x: number | null
+    y: number | null
 
     source_key: Record<string, unknown>
     analysis_time: string
@@ -76,12 +78,26 @@ export type ObjectsParams = {
     has_flags?: number[] | null;
     excludes_flags?: number[] | null;
     no_flags?: boolean | null;
+    designation?: string;
     sort?: string;
 }
 
 export function getObjects(params: ObjectsParams = {}, enabled: boolean = true) {
     const queryKey = ["objects", params];
     return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetObjects(pageParam, params), enabled)
+}
+
+// all objects for a run, unpaginated - for plotting positions over a run's images, not for display in a list
+export function getObjectPositions(analysisKey: string, enabled: boolean = true) {
+    return useQuery<Object[], Error>({
+        queryKey: ["objectPositions", analysisKey],
+        queryFn: async () => {
+            const { data } = await axios.get<Object[]>(ENDPOINT, { params: { analysis_key: analysisKey, limit: 1000 } });
+            return data;
+        },
+        enabled,
+        staleTime: Infinity,
+    });
 }
 
 export function getObjectsCount(params: ObjectsParams = {}, enabled: boolean = true) {

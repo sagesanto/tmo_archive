@@ -6,7 +6,7 @@ import { Link, useNavigate } from 'react-router';
 import { CardContainer, CollectionLengthChip, MediumLoadingCard } from '@components/general';
 import { AppRoutes } from '@config/routes';
 import { formatTimestamp } from '@utils/formatters';
-import { ObsTypeChip } from './obs_type_chip';
+import { TagChip } from './tag_chip';
 
 export function ObservationCard({ natural_key }: { natural_key: string }) {
     const { data: observation, isLoading, isError } = getObservation(natural_key);
@@ -46,7 +46,9 @@ export function ObservationCardContent({ observation }: { observation: Observati
                         <Stack direction="row" spacing={1} alignItems={'center'}>
                             {observation.name ? <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {observation.name} </Typography> :  <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {observation.display_name} </Typography> }
                             <CollectionLengthChip length={observation.n_runs} tooltip="Analysis Runs" />
-                            {observation.obs_type && <ObsTypeChip obs_type={observation.obs_type} />}
+                            {observation.tags?.map((tag) => (
+                                <TagChip key={tag.id} tag={tag} />
+                            ))}
                         </Stack>
                         <Typography variant='subtitle1'>Observed {formatTimestamp(new Date(observation.acq_timestamp * 1000).toISOString())}</Typography>
                     </Stack>

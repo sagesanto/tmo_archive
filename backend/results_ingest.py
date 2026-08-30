@@ -4,6 +4,8 @@ from core.utils import to_naive_utc, write_out as _write_out
 from core.sqlite_db import SQLiteDB
 from core.syntrack_enums import Status, ObjectType, Classification
 from core.keys import results_db_key, obs_key, run_key, object_key, blob_key
+from core.blob_utils import SOURCE_TABLE_KEYS, blob_to_arr
+from core.paths import to_host_path
 
 import os
 from os.path import dirname, exists, getmtime, getsize, join, abspath
@@ -24,15 +26,10 @@ import matplotlib.pyplot as plt
 from astropy.visualization import ZScaleInterval
 
 
-SOURCE_TABLE_KEYS = {
-    "Images": ("AnalysisID", "ImageType", "ImageIndex"),
-    "Objects": ("AnalysisID", "ObjectIndex"),
-}
-
 OBJ_TYPES_TO_INGEST = (ObjectType.MovingFinal.value,)
 OBJ_CLASSIFICATION_TO_INGEST = (Classification.FastMoving.value, Classification.SlowMoving.value)
 
-THUMBNAIL_DIR = abspath(join(dirname(__file__), 'thumbnails'))
+THUMBNAIL_DIR = os.environ.get("THUMBNAIL_DIR", abspath(join(dirname(__file__), 'thumbnails')))
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 global local_logger
@@ -41,18 +38,6 @@ local_logger: Optional[logging.Logger] = None
 
 def write_out(*msg, level=logging.INFO):
     _write_out(*msg, level=level, logger=local_logger)
-
-
-def blob_to_arr(blob: bytes, width: int, height: int, dtype: str = 'Single') -> np.ndarray:
-    if dtype == "Single":
-        data_type = '<f4' # little-endian float32
-    elif dtype == "uint8":
-        data_type = '|u1'
-    else:
-        write_out(f"Data Type '{dtype}' not recognized", level=logging.ERROR)
-        raise ValueError(f'dtype not recognized: {dtype}')
-    arr = np.frombuffer(blob, dtype=data_type)
-    return arr.reshape(height, width)
 
 
 def make_thumbnail(arr: np.ndarray, outpath: str, p1, p99, vmin, vmax, zscale: bool = False,
@@ -71,7 +56,7 @@ def make_thumbnail(arr: np.ndarray, outpath: str, p1, p99, vmin, vmax, zscale: b
     scale = min(longest_side_px / max(h, w), 1.0)
     out_w, out_h = max(1, round(w * scale)), max(1, round(h * scale))
 
-    print(f'Scaling img ({w},{h}) to ({out_w},{out_h})')
+    # print(f'Scaling img ({w},{h}) to ({out_w},{out_h})')
 
     dpi = 100
     fig = plt.figure(figsize=(out_w / dpi, out_h / dpi), dpi=dpi)
@@ -246,16 +231,6 @@ def ingest_objects(db: Session, res_db: SQLiteDB, run_record: AnalysisRun, thumb
     return objects, blob_refs
 
 
-def locate_row_from_blob_record(blob_ref: BlobRef, res_db: SQLiteDB):
-    table = blob_ref.source_table
-    if table not in SOURCE_TABLE_KEYS:
-        raise ValueError(f"disallowed source_table: {table!r}")
-    key_cols = SOURCE_TABLE_KEYS[table]
-    where = " AND ".join(f"{c} = ?" for c in key_cols)
-    params = [blob_ref.source_key[c] for c in key_cols]
-    return res_db.query(f"SELECT * FROM {table} WHERE {where}", params).one_or_none()
-
-
 def get_db_file_stats(path: str) -> tuple[int, datetime]:
     filesize = getsize(path)
     last_file_update = to_naive_utc(datetime.fromtimestamp(getmtime(path), tz=dt_tz.utc))
@@ -288,6 +263,8 @@ def build_run_record(row: dict[str, Any], res_db_record: ResultsDB, observation:
         obs_time=obs_dt,
         results_db_id=res_db_record.id,
         observation_id=observation.id,
+        sky_mag=row.get('SkyMeanFlux_MAG'),
+        detection_limit_mag=row.get('DetectionThreshold_MAG')
     )
 
 
@@ -331,7 +308,8 @@ def ingest_results_db(results_path: str, logger, force_ingest: bool = False):
         return None
 
     filesize, last_file_update = get_db_file_stats(results_path)
-    db_nat_key, db_name = results_db_key(results_path)
+    host_path = to_host_path(results_path)  # store as host path, see core/paths.py
+    db_nat_key, db_name = results_db_key(host_path)
 
     with get_record_db() as db:
         db_record = find_existing_results_db(db, db_nat_key)
@@ -342,14 +320,14 @@ def ingest_results_db(results_path: str, logger, force_ingest: bool = False):
                 return db_record.id
 
         if db_record is None:
-            db_record = ResultsDB(natural_key=db_nat_key, display_name=db_name, filename=results_path)
+            db_record = ResultsDB(natural_key=db_nat_key, display_name=db_name, filename=host_path)
             db.add(db_record)
             db.flush()
         else:  # we are updating. wipe
             for run in list(db_record.analysis_runs):
                 delete_analysis_run(db, run) # cascades
 
-        db_record.filename = results_path
+        db_record.filename = host_path
         db_record.filesize = filesize
         db_record.last_file_update = last_file_update
         db.flush()

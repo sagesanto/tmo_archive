@@ -1,16 +1,65 @@
-# for dev, just run postgres
 services:
   postgres:
     image: postgres:17
+    restart: always
     environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: neo_view
     volumes:
       - pgdata:/var/lib/postgresql/data
-      # - ./init-neoview-db:/docker-entrypoint-initdb.d
+      - ./init-neoview-db:/docker-entrypoint-initdb.d
     ports:
-      - "5435:5432"
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d neo_view"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      target: api
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/neo_view
+      RESULTS_HOST_PATH: ${RESULTS_HOST_PATH}
+    volumes:
+      - thumbnails:/data/thumbnails:ro
+      - ${RESULTS_HOST_PATH}:/data/results:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  ingest:
+    build:
+      context: ./backend
+      target: ingest
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/neo_view
+      THUMBNAIL_DIR: /data/thumbnails
+      RESULTS_HOST_PATH: ${RESULTS_HOST_PATH}
+      OBS_HOST_PATH: ${OBS_HOST_PATH}
+    volumes:
+      - thumbnails:/data/thumbnails
+      - ${RESULTS_HOST_PATH}:/data/results:ro
+      - ${OBS_HOST_PATH}:/data/obs:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      target: prod
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - api
+    restart: always
 
 volumes:
   pgdata:
+  thumbnails:

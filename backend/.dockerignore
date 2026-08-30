@@ -13,3 +13,8 @@ venv/
 .idea
 *.swp
 *.swo
+
+thumbnails/
+testing/
+*.egg-info/
+.git

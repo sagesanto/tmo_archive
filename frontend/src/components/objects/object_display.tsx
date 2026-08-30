@@ -12,13 +12,16 @@ import { useInView } from 'react-intersection-observer'
 const SORT_LABELS = ["Highest SNR", "Lowest SNR", "Brightest", "Most Frames", "Newest Analyzed", "Oldest Analyzed"];
 const SORT_PARAMS = ["snr_desc", "snr_asc", "magnitude_asc", "num_frames_desc", "analysis_time_desc", "analysis_time_asc"];
 
-export function ObjectDisplay({ analysisKey, observationId, resultsDbId, selected, setSelected, title = "Objects", classificationFilter = null, onClassificationFilterChange }: { analysisKey?: string, observationId?: number, resultsDbId?: number, selected: Array<Object>, setSelected: React.Dispatch<React.SetStateAction<Object[]>>, title: String, classificationFilter?: string | null, onClassificationFilterChange?: (classification: string | null) => void }) {
+export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designation, selected, setSelected, title = "Objects", classificationFilter = null, onClassificationFilterChange, flagFilters: externalFlagFilters, onFlagFiltersChange }: { analysisKey?: string, observationId?: number, resultsDbId?: number, designation?: string, selected: Array<Object>, setSelected: React.Dispatch<React.SetStateAction<Object[]>>, title: String, classificationFilter?: string | null, onClassificationFilterChange?: (classification: string | null) => void, flagFilters?: FlagFilterState | null, onFlagFiltersChange?: (state: FlagFilterState) => void }) {
     const { ref, inView } = useInView()
 
     const [sortIndex, setSortIndex] = useState(0);
     const [internalClassification, setInternalClassification] = useState<string | null>(null);
     const [minSnr, setMinSnr] = useState("");
-    const [flagFilters, setFlagFilters] = useState<FlagFilterState | null>(null);
+    const [internalFlagFilters, setInternalFlagFilters] = useState<FlagFilterState | null>(null);
+
+    const flagFilters = onFlagFiltersChange ? (externalFlagFilters ?? null) : internalFlagFilters;
+    const setFlagFilters = onFlagFiltersChange ?? setInternalFlagFilters;
 
     const { data: flags } = getFlags();
 
@@ -51,6 +54,7 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, selecte
             analysis_key: analysisKey,
             observation_id: observationId,
             results_db_id: resultsDbId,
+            designation,
             classification: classification || null,
             min_snr: minSnr ? Number(minSnr) : null,
             has_flags,
@@ -58,13 +62,14 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, selecte
             no_flags: noFlagsState === 'include' ? true : noFlagsState === 'exclude' ? false : null,
             sort: SORT_PARAMS[sortIndex],
         };
-    }, [analysisKey, observationId, resultsDbId, classification, minSnr, flagFilters, sortIndex]);
+    }, [analysisKey, observationId, resultsDbId, designation, classification, minSnr, flagFilters, sortIndex]);
 
     const scopeParams: ObjectsParams = useMemo(() => ({
         analysis_key: analysisKey,
         observation_id: observationId,
         results_db_id: resultsDbId,
-    }), [analysisKey, observationId, resultsDbId]);
+        designation,
+    }), [analysisKey, observationId, resultsDbId, designation]);
 
     // wait for the default flag filters to be computed so we don't fetch once unfiltered then refetch
     const ready = flagFilters !== null;

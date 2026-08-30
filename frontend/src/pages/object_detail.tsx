@@ -6,8 +6,9 @@ import image_defaults from '@config/image_defaults';
 import { ObjectIcon, HomeIcon, AnalysisIcon, CutoutIcon, ProposalIcon, FlagIcon } from '@assets/icons';
 import { getObject, Object } from '@api/object';
 import { getFlags } from '@api/flag';
+import { getAnalysis } from '@api/analysis';
 import { getMPCEncounter, SingleEncounterParams } from '@api/mpc_encounter';
-import { AnalysisChip } from '@components/analyses';
+import { AnalysisChip, AnalysisMetricsColumn } from '@components/analyses';
 import { ResultsDBChip } from '@components/results_dbs';
 import { ObservationChip } from '@components/observations';
 import { ClassificationChip } from '@components/objects/classification_chip';
@@ -40,6 +41,7 @@ export function ObjectDetailPage() {
     const { data: object, isLoading, isError, error } = getObject(natural_key);
     const { data: mpc, mpcIsLoading, mpcIsError, mpcError } = getMPCEncounter({object_key: natural_key});
     const { data: allFlags } = getFlags();
+    const { data: analysisRun } = getAnalysis(object?.analysis_run_key ?? '');
 
     // const { data: flags, flagLoading, flagError } = getFlagsByObject(oid);
 
@@ -131,6 +133,8 @@ export function ObjectDetailPage() {
                             View in Aladin
                         </Button>
                     </Stack>
+                    <Divider orientation="vertical" flexItem />
+                    <AnalysisMetricsColumn metrics={analysisRun?.metrics} sky_mag={analysisRun?.sky_mag} detection_limit_mag={analysisRun?.detection_limit_mag} />
                 </Stack>
             {/* </Card> */}
 

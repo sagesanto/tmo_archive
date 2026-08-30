@@ -1,0 +1,32 @@
+[
+    {
+        "name":"Dark",
+        "description":"Dark calibration dataset",
+        "color": "#96705B"
+    },
+    {
+        "name":"Flat",
+        "description":"Flat calibration dataset",
+        "color": "#EBB3A9"
+    },
+    {
+        "name":"Bias",
+        "description":"Bias calibration dataset",
+        "color": "#07BEB8"
+    },
+    {
+        "name":"Science",
+        "description":"Science dataset",
+        "color": "#7353BA"
+    },
+    {
+        "name":"NEO",
+        "description":"Minor PLanet Center NEO Candidate",
+        "color": "#8F3985"
+    },
+    {
+        "name":"TESS",
+        "description":"Transiting Exoplanet Survey Satellite (TESS) follow-up target",
+        "color": "#98DFEA"
+    }
+]

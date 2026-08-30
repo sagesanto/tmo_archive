@@ -46,6 +46,9 @@ class AnalysisRun(Base):
     analysis_time: Mapped[datetime] = col(nullable=False)
     obs_time: Mapped[datetime] = col(nullable=False)
     
+    sky_mag: Mapped[float] = col(nullable=True)
+    detection_limit_mag: Mapped[float] = col(nullable=True)
+    
     metrics: Mapped[dict] = col(JSONB,nullable=True)
     
     results_db_id: Mapped[int] = col(ForeignKey("results_dbs.id"), nullable=False)
@@ -245,7 +248,7 @@ class MPCCandidate(Base):
     designation: Mapped[str] = col(nullable=False,unique=True)
     
     mpc_encounters: Mapped[list["MPCEncounter"]] = relationship(back_populates="mpc_candidate")
-    
+    status: Mapped[Optional["MPCStatus"]] = relationship(back_populates="mpc_candidate")
 class MPCEncounter(Base):
     __tablename__ = "mpc_encounters"
     
@@ -256,9 +259,29 @@ class MPCEncounter(Base):
     
     d_ra: Mapped[float] = col(nullable=False)
     d_dec: Mapped[float] = col(nullable=False)
+    v_mag: Mapped[float] = col(nullable=True)
     
     observation: Mapped["Observation"] = relationship(back_populates="mpc_encounter")
     mpc_candidate: Mapped["MPCCandidate"] = relationship(back_populates="mpc_encounters")
+    
+class MPCStatus(Base):
+    __tablename__ = "mpc_status"
+    __table_args__ = (
+        UniqueConstraint("mpc_candidate_id", name="uq_candidate"),
+    )
+    
+    id: Mapped[int] = col(primary_key=True)
+    mpc_candidate_id: Mapped[int] = col(ForeignKey("mpc_candidates.id"), nullable=False)
+
+    trksub: Mapped[str] = col(nullable=False)
+    iau_desig: Mapped[str] = col(nullable=True)
+    status: Mapped[str] = col(nullable=False)
+    reference: Mapped[str] = col(nullable=True)
+    datetime_ut: Mapped[str] = col(nullable=True)
+    desig_page: Mapped[str] = col(nullable=True)
+    reference_page: Mapped[str] = col(nullable=True)
+        
+    mpc_candidate: Mapped["MPCCandidate"] = relationship(back_populates="status")
 
 class Flag(Base):
     __tablename__ = "flags"
@@ -283,6 +306,48 @@ class ObjectFlag(Base):
     attached: Mapped[datetime] = col(server_default=func.now())
         
     flag: Mapped["Flag"] = relationship(back_populates="object_flags")
+
+class Tag(Base):  # tags for types of datasets
+    __tablename__ = "tags"
+    id: Mapped[int] = col(primary_key=True)
+    name: Mapped[str] = col(nullable=False, unique=True)
+    description: Mapped[str] = col(nullable=False)
+    color: Mapped[str] = col(String, nullable=False)
+    
+    obs_tags: Mapped[list["ObservationTag"]] = relationship(back_populates="tag", cascade="all, delete-orphan")
+
+class ObservationTag(Base):
+    __tablename__ = "observation_tag"
+    __table_args__ = (
+        UniqueConstraint("observation_key", "tag_id", name="uq_obs_tag"),
+    )
+    id: Mapped[int] = col(primary_key=True)
+    
+    # leaving out a foreign key for obs, will be attached by natural key to survive reingest
+    observation_key: Mapped[str] = col(String, index=True, nullable=False)
+    tag_id: Mapped[int] = col(ForeignKey("tags.id"), nullable=False)
+    attached: Mapped[datetime] = col(server_default=func.now())
+        
+    tag: Mapped["Tag"] = relationship(back_populates="obs_tags")
+    
+class AppConfig(Base):
+    __tablename__ = "app_config"
+
+    key: Mapped[str] = col(String, primary_key=True)
+    value: Mapped[dict] = col(JSONB, nullable=False)
+    updated_at: Mapped[datetime] = col(server_default=func.now(), onupdate=func.now())
+
+class IngestJob(Base):
+    __tablename__ = "ingest_jobs"
+
+    id: Mapped[int] = col(primary_key=True, autoincrement=True)
+    status: Mapped[str] = col(String, nullable=False, default="pending", index=True)  # pending | running | success | error
+    trigger: Mapped[str] = col(String, nullable=False)  # manual | scheduled
+    requested_at: Mapped[datetime] = col(server_default=func.now())
+    started_at: Mapped[Optional[datetime]] = col(nullable=True)
+    finished_at: Mapped[Optional[datetime]] = col(nullable=True)
+    error: Mapped[Optional[str]] = col(String, nullable=True)
+    summary: Mapped[Optional[dict]] = col(JSONB, nullable=True)
 
 class Annotation(Base):
     __tablename__ = "annotations"

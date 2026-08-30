@@ -1,6 +1,8 @@
 **/.env
 **/.env.*
-dot_env.prod
+dev.env
+test_data
+
 # Logs
 logs
 *.log

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from collections import defaultdict
 
 from db.database import get_session
-from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag
+from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag, MPCEncounter
 from app.schemas import DetectedObjectOverview
 
 router = APIRouter(prefix="/objects", tags=["objects"])
@@ -34,11 +34,12 @@ class ObjectFilterParams:
     has_flags: list[int] | None = Query(default=None)
     excludes_flags: list[int] | None = Query(default=None)
     no_flags: bool | None = Query(default=None, description="true: only objects with no flags. false: only objects with at least one flag.")
+    designation: str | None = Query(default=None, description="MPC designation of an encounter tied to the object's observation")
 
     def apply(self, stmt):
         if self.natural_key is not None:
             stmt = stmt.where(DetectedObject.natural_key == self.natural_key)
-        if self.analysis_key is not None or self.observation_id is not None or self.results_db_id is not None:
+        if self.analysis_key is not None or self.observation_id is not None or self.results_db_id is not None or self.designation is not None:
             stmt = stmt.join(AnalysisRun)
             if self.analysis_key is not None:
                 stmt = stmt.where(AnalysisRun.natural_key == self.analysis_key)
@@ -46,6 +47,8 @@ class ObjectFilterParams:
                 stmt = stmt.where(AnalysisRun.observation_id == self.observation_id)
             if self.results_db_id is not None:
                 stmt = stmt.where(AnalysisRun.results_db_id == self.results_db_id)
+            if self.designation is not None:
+                stmt = stmt.join(MPCEncounter, MPCEncounter.observation_id == AnalysisRun.observation_id).where(MPCEncounter.designation == self.designation)
         if self.classification is not None:
             stmt = stmt.where(DetectedObject.classification == self.classification)
         if self.type is not None:
@@ -80,7 +83,7 @@ def count_objects(
     filters: ObjectFilterParams = Depends(),
     db: Session = Depends(get_session),
 ) -> int:
-    stmt = filters.apply(select(func.count(DetectedObject.id)))
+    stmt = filters.apply(select(func.count(DetectedObject.id.distinct())))
     return db.execute(stmt).scalar_one()
 
 

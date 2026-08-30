@@ -4,6 +4,8 @@ from datetime import datetime
 from typing import Any, Optional
 from core.keys import derive
 from pydantic import BaseModel, ConfigDict, computed_field
+from core.syntrack_enums import ImageType
+from mpc import MPCStatus
 
 class ObsType(Enum):
     Unclassified = -1
@@ -13,9 +15,16 @@ class ObsType(Enum):
     Bias = 3
     Other = 4
 
+class TagReturn(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    description: str
+    color: str
+
 class ObservationOverview(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     natural_key: str
     display_name: str
@@ -55,6 +64,8 @@ class ObservationOverview(BaseModel):
     front_housing_temp: Optional[float] = None
     rear_housing_temp: Optional[float] = None
     camera_temp: Optional[float] = None
+
+    tags: list[TagReturn] = []
 
     @computed_field
     @property
@@ -98,6 +109,9 @@ class RunOverview(BaseModel):
     obs_time: datetime
     metrics: Optional[dict[str, Any]] = None
     n_objects: Optional[int] = None
+    
+    sky_mag: Optional[float] = None
+    detection_limit_mag: Optional[float] = None
 
     results_db_id: int
     observation_id: int
@@ -138,6 +152,8 @@ class DetectedObjectOverview(BaseModel):
     v_dec: Optional[float] = None
     ra: Optional[float] = None
     dec: Optional[float] = None
+    x: Optional[float] = None
+    y: Optional[float] = None
 
     source_key: dict[str, Any]
     obs_time: datetime
@@ -164,19 +180,38 @@ class BlobRefOverview(BaseModel):
     natural_key: str
     analysis_run_id: int
     source_table: str
+    image_type: Optional[int] = None
+    image_index: Optional[int] = None
     width: int
     height: int
     size_class: str
-    
+
+    @computed_field
+    @property
+    def image_name(self) -> str | None:
+        if self.image_type is not None:
+            return ImageType(self.image_type).name
+        return None
+
     @computed_field
     @property
     def thumbnail_url(self) -> str:
         return f"/api/blobs/thumbnail?natural_key={self.natural_key}"
-    
+
     @computed_field
     @property
     def analysis_run_key(self) -> str|None:
         return derive(self.natural_key,'run')
+
+
+# full detail for a single blob, including its dtype and pixel-value stats.
+# only fetched for the one blob currently being viewed, since stats/histograms are heavy
+class BlobRefDetail(BlobRefOverview):
+    dtype: str
+    vmin: Optional[float] = None
+    vmax: Optional[float] = None
+    percentiles: Optional[dict[str, Any]] = None
+    histogram: Optional[dict[str, Any]] = None
     
     
 class MPCEncounterOverview(BaseModel):
@@ -196,4 +231,45 @@ class MPCCandidateOverview(BaseModel):
     id: int
     designation: str
     
+class MPCIdentification(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     
+    mpc_candidate_id: int
+    id: int
+    trksub: str
+    iau_desig: Optional[str] = None
+    status: str
+    reference: Optional[str] = None
+    datetime_ut: Optional[str] = None
+    desig_page: Optional[str] = None
+    reference_page: Optional[str] = None
+    
+    @computed_field
+    @property
+    def status_name(self) -> str | None:
+        try:
+            status = MPCStatus(self.status).name
+        except:
+            status = self.status
+        return status
+
+class AppConfigOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    key: str
+    value: Any
+    updated_at: datetime
+
+class AppConfigUpdate(BaseModel):
+    key: str
+    value: Any
+
+class IngestJobOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    status: str
+    trigger: str
+    requested_at: datetime
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    error: Optional[str] = None
+    summary: Optional[dict[str, Any]] = None

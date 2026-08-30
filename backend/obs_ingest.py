@@ -5,13 +5,44 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple
 import numpy as np
 from sqlalchemy.orm import Session
+from sqlalchemy.dialects.postgresql import insert
 
 from obs.calibs import is_bias, is_dark, is_flat, is_science
 from obs.metadata import MetadataDat, MetadataDB, get_obs_details, read_schedule
 from db.database import get_record_db, reset_db
-from db.models import FitsFile, MPCEncounter, MPCCandidate, Observation, Schedule, MetadataDBRecord as RecordMetadataDB
+from db.models import FitsFile, MPCEncounter, MPCCandidate, Tag, ObservationTag, Observation, Schedule, MetadataDBRecord as RecordMetadataDB
 from core.keys import obs_key
+from core.paths import to_host_path
 
+tag_ids: dict[str,int] = None
+
+def attach_tag(obs: Observation, tag_name, db: Session):
+    global tag_ids
+    if tag_ids is None:
+        tag_ids = dict(db.query(Tag.name, Tag.id).all())
+    stmt = (
+        insert(ObservationTag).values(observation_key=obs.natural_key,tag_id=tag_ids[tag_name]).on_conflict_do_nothing(index_elements=["observation_key", "tag_id"])
+    )
+    db.execute(stmt)
+    db.flush()
+    
+def tag_observation(obs:Observation, db: Session):
+    if obs.is_science:
+        attach_tag(obs,"Science",db)
+    if obs.is_bias:
+        attach_tag(obs,"Bias",db)
+    if obs.is_flat:
+        attach_tag(obs,"Flat",db)
+    if obs.is_dark:
+        attach_tag(obs,"Dark",db)
+    
+    if obs.is_science and "MPC Asteroid" in obs.description:
+        attach_tag(obs,"NEO",db)
+    if obs.is_science and obs.name.startswith("TESS"):
+        attach_tag(obs,"TESS",db)
+        
+    
+    
 def to_naive_utc(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         return dt
@@ -74,9 +105,9 @@ def build_observation_fields(obs_row: dict, obs_details: dict) -> dict:
         tele_ra=obs_details["TelescopeRA"],
         tele_dec=obs_details["TelescopeDEC"],
         camera_name=obs_details["CameraName"],
-        gain=float(cam_params["Gain"]),
-        binning_mode=cam_params["Binning Mode"],
-        operation_mode=cam_params["Operation Mode"],
+        gain=float(cam_params.get("Gain",-1)),
+        binning_mode=cam_params.get("Binning Mode",'Unknown'),
+        operation_mode=cam_params.get("Operation Mode",'Unknown'),
         binning_size=obs_details["BinningSize"],
         roi_start_x=obs_details["ROI_StartX"],
         roi_start_y=obs_details["ROI_StartY"],
@@ -86,34 +117,12 @@ def build_observation_fields(obs_row: dict, obs_details: dict) -> dict:
         acq_timestamp=obs_row["AcqTimestamp"],
         acq_num_1=obs_row["AcqNum1"],
         acq_num_2=obs_row["AcqNum2"],
-        cooler_on=cam_params["Cooler On"] == 'true',
-        target_temp=cam_params["Target Temp"],
-        front_housing_temp=cam_params["Temp Front Housing"],
-        rear_housing_temp=cam_params["Temp Rear Housing"],
-        camera_temp=obs_details.get('CamTemperature')
+        cooler_on=cam_params.get("Cooler On","Unknown") == 'true',
+        target_temp=cam_params.get("Target Temp",999),
+        front_housing_temp=cam_params.get("Temp Front Housing",999),
+        rear_housing_temp=cam_params.get("Temp Rear Housing",999),
+        camera_temp=obs_details.get('CamTemperature',999)
     )
-    
-def parse_mpc(obs:Observation, db:Session) -> tuple[MPCCandidate,MPCEncounter]|None:
-    if "MPC Asteroid" not in obs.description:
-        return None
-    spl = obs.description.split(',')
-    desig = spl[0].replace('MPC Asteroid ', '')
-    d_ra = float(spl[4].split(' ')[-1])
-    d_dec = float(spl[5].split(' ')[-1])
-    candidate = db.query(MPCCandidate).filter_by(designation=desig).one_or_none()
-    if candidate is None:
-        candidate = MPCCandidate(designation=desig)
-        db.add(candidate)
-        db.flush()
-    encounter = MPCEncounter(
-        designation=desig,
-        observation_id = obs.id,
-        mpc_candidate_id = candidate.id,
-        d_ra=d_ra,
-        d_dec=d_dec
-    )
-    return candidate, encounter
-        
 
 def _ingest_md_db(target_db: MetadataDB, target_dat: MetadataDat, data_dir: str, logger, schedule_path: str = None, force_ingest: bool = False, record_db_path=None):
     schedule = None
@@ -121,10 +130,11 @@ def _ingest_md_db(target_db: MetadataDB, target_dat: MetadataDat, data_dir: str,
         schedule, _ = read_schedule(schedule_path)
 
     filesize, last_file_update = get_db_file_stats(target_db.fname)
+    host_metadata_path = to_host_path(target_db.fname)  # store as host path, see core/paths.py
     # print("Connecting to records db")
     with get_record_db() as db:
         # print("Locating an existing entry for this database...")
-        db_record = find_existing_metadata_db(db, target_db.fname)
+        db_record = find_existing_metadata_db(db, host_metadata_path)
 
         if db_record is not None and not force_ingest:
             if db_record.filesize == filesize and db_record.last_file_update == last_file_update:
@@ -134,7 +144,7 @@ def _ingest_md_db(target_db: MetadataDB, target_dat: MetadataDat, data_dir: str,
 
         if db_record is None:
             # print("Adding a record...")
-            db_record = RecordMetadataDB(filename=target_db.fname)
+            db_record = RecordMetadataDB(filename=host_metadata_path)
             db.add(db_record)
             # print("Added")
 
@@ -162,7 +172,7 @@ def _ingest_md_db(target_db: MetadataDB, target_dat: MetadataDat, data_dir: str,
             # print(f"Extracted information.")
 
             obs_schedule_path = obs_details.get("schedule_path")
-            fields["schedule_id"] = find_or_create_schedule(db, obs_schedule_path).id if obs_schedule_path else None
+            fields["schedule_id"] = find_or_create_schedule(db, to_host_path(obs_schedule_path)).id if obs_schedule_path else None
             # print(f"Located/created schedule record")
 
             observation = find_existing_observation(
@@ -185,13 +195,10 @@ def _ingest_md_db(target_db: MetadataDB, target_dat: MetadataDat, data_dir: str,
 
             for fpath in find_fits_files(data_dir, obs_details["Name"]):
                 # print(f"Associating fits file {fpath}")
-                db.add(FitsFile(observation_id=observation.id, filepath=fpath))
-            # print("Done.")
-            mpc = parse_mpc(observation,db)
-            if mpc is not None:
-                candidate, encounter = mpc 
-                db.add(encounter)  # candidate already added
-            
+                db.add(FitsFile(observation_id=observation.id, filepath=to_host_path(fpath)))
+            db.flush()
+
+            tag_observation(observation, db)
             db.flush()
 
         return db_record.id
