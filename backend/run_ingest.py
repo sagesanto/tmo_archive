@@ -26,24 +26,25 @@ def find_matches(entries: list[dict], logger) -> list[str]:
     for entry in entries:
         container_dir = to_container_path(entry["dir"])
         pattern = entry["pattern"]
-        logger.info(f"Walking {container_dir} with pattern {pattern}")
-        logger.info(os.listdir(container_dir))
         for root, _, files in os.walk(container_dir):
-            logger.info(f"root: {root}")
-            logger.info(files)
-            n_matches = len(matches)
             matches += [os.path.join(root, f) for f in files if fnmatch.fnmatch(f, pattern)]
-            logger.info(f"{len(matches)-n_matches} matches in {root}")
     return matches
 
 
 def run_full_ingest(search_paths: dict, logger) -> dict:
     n_obs = 0
-    logger.info("Looking for obs dirs")
+    failed_obs = 0
+    logger.info("Ingesting observation databases.")
     for path in find_matches(search_paths.get("obs", []), logger):
-        logger.info(f"Found {path}. Ingesting")
-        ingest_md_db(path, logger)
-        n_obs += 1
+        try:
+            ingest_md_db(path, logger)
+            n_obs += 1
+        except Exception as e:
+            failed_obs += 1
+            logger.exception(f"Failed to ingest {path}: {e}")
+    logger.info(f"Scanned {n_obs} observation databases.")
+    if failed_obs:
+        logger.error(f"Failed to ingest {failed_obs} observation databases.")
 
     try:
         ingest_mpc()
@@ -51,13 +52,21 @@ def run_full_ingest(search_paths: dict, logger) -> dict:
         logger.error(f"MPC ingest failed, continuing with results ingest: {e}")
 
     n_results = 0
-    logger.info("Looking for results dirs")
+    failed_results = 0
     for path in find_matches(search_paths.get("results", []), logger):
-        logger.info(f"Found {path}. Ingesting")
-        ingest_results_db(path, logger)
-        n_results += 1
+        try:
+            ingest_results_db(path, logger)
+            n_results += 1
+        except Exception as e: 
+            failed_results += 1
+            logger.exception(f"Failed to ingest {path}: {e}")
+    logger.info(f"Scanned {n_results} results databases.")
 
     run_mpc_classification()
+    if failed_obs:
+        logger.error(f"Failed to ingest {failed_obs} observation databases.")
+    if failed_results:
+        logger.error(f"Failed to ingest {failed_results} results databases.")
     return {"obs_matched": n_obs, "results_matched": n_results}
 
 
