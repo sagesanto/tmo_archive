@@ -42,8 +42,8 @@ async function webGetMPCEncounter(
     return data[0];
 }
 
-function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<Analysis[]>>) {
-    return useInfiniteQuery<Page<MPCEncounter[]>, Error, InfiniteData<Page<Analysis[]>, number>, readonly unknown[], number>({
+function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<MPCEncounter[]>>) {
+    return useInfiniteQuery<Page<MPCEncounter[]>, Error, InfiniteData<Page<MPCEncounter[]>, number>, readonly unknown[], number>({
         initialPageParam: 1,
         queryKey: queryKey,
         queryFn: queryFn,

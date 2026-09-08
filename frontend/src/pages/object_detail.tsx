@@ -39,7 +39,7 @@ export function ObjectDetailPage() {
     let navigate = useNavigate();
     // const mpc_params: SingleEncounterParams = {object_key: }
     const { data: object, isLoading, isError, error } = getObject(natural_key);
-    const { data: mpc, mpcIsLoading, mpcIsError, mpcError } = getMPCEncounter({object_key: natural_key});
+    const { data: mpc, isLoading: mpcIsLoading, isError: mpcIsError, error: mpcError } = getMPCEncounter({object_key: natural_key});
     const { data: allFlags } = getFlags();
     const { data: analysisRun } = getAnalysis(object?.analysis_run_key ?? '');
 
@@ -55,7 +55,7 @@ export function ObjectDetailPage() {
         );
     }
 
-    if (isLoading) {
+    if (isLoading || !object) {
         return (
             <> </>
         )
@@ -68,7 +68,7 @@ export function ObjectDetailPage() {
         document.title = "Object not found";
         return (
             <Container>
-            <Stack direction="column" spacing={2} alignItems={'start'} sx={{ width: '100%' }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: 'start', width: '100%' }}>
                 <Typography variant='h3'>  Something's Afoot :( </Typography>
                 <Typography variant='h4'> {`Error loading object`} </Typography>
             </Stack>
@@ -78,7 +78,7 @@ export function ObjectDetailPage() {
 
     return (
         <Stack spacing={3} sx={{ width: '100%', padding: 3 }}>
-            <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} justifyContent={"center"} sx={{ width: '100%', flexWrap: 'wrap' }}>
+            <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
                 <ObjectIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                 <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}>{object?.display_name}</Typography>
                 {object?.classification && (
@@ -93,7 +93,7 @@ export function ObjectDetailPage() {
                 ))}
             </Stack>
 
-            <Stack direction="row" spacing={1} alignItems={'center'}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                 {mpc && <MPCChip designation={mpc?.designation ?? ''} />}
                 <AnalysisChip natural_key={object.analysis_run_key ?? ''} />
                 <ResultsDBChip natural_key={object.results_db_key ?? ''} />
@@ -102,11 +102,11 @@ export function ObjectDetailPage() {
 
 
             {/* <Card elevation={3} sx={{ width: '100%', padding: 3, borderRadius: 2 }}> */}
-                <Stack direction="row" spacing={4} alignItems="flex-start">
+                <Stack direction="row" spacing={4} sx={{ alignItems: "flex-start" }}>
                     <Box sx={{ width: image_defaults.thumbnail_size, flexShrink: 0, borderRadius: 1, overflow: 'hidden', border: (theme) => `1px solid ${theme.palette.divider}` }}>
                         <ObjectSyntheticImage object_key={object?.natural_key} />
                     </Box>
-                    <Stack direction="column" spacing={2} sx={{ height: '100%' }} justifyContent="space-between">
+                    <Stack direction="column" spacing={2} sx={{ justifyContent: "space-between", height: '100%' }}>
                         <Box sx={{
                             display: 'grid',
                             gridTemplateColumns: 'auto auto',
@@ -142,7 +142,7 @@ export function ObjectDetailPage() {
         <Card elevation={3} sx={{ width: '100%', padding: 3, borderRadius: 2 }}>
 
             {allFlags && allFlags.length > 0 && (
-                <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} sx={{ width: '100%', flexWrap: 'wrap' }}>
+                <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
                     {allFlags.map((flag) => {
                         const attached = object.flags?.find((f) => f.id === flag.id);
                         return <FlagChip key={flag.id} flag={attached ?? flag} objectKey={object.natural_key} />;

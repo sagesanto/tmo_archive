@@ -5,12 +5,13 @@ import { getObservations, getObservationsCount } from "@api/observation";
 import { FilteredCollectionLengthChip, SortSelect } from "@components/general";
 import { ObservationTable } from "./observation_table";
 import { NO_TAGS_KEY, TagFilterState, TagFilterTray } from "./tag_filter_tray";
+import { usePersistedSort } from "@hooks/usePersistedSort";
 
 const SORT_LABELS = ["Most Recently Acquired", "Least Recently Acquired", "Name", "Most Runs"];
 const SORT_PARAMS = ["acq_timestamp_desc", "acq_timestamp_asc", "name", "n_runs_desc"];
 
 export function ObservationDisplay({ title = "Observations", tagFilters: externalTagFilters, onTagFiltersChange, designation }: { title?: string, tagFilters?: TagFilterState | null, onTagFiltersChange?: (state: TagFilterState) => void, designation?: string }) {
-    const [sortIndex, setSortIndex] = useState(0);
+    const [sortIndex, setSortIndex] = usePersistedSort("observation_sort", SORT_PARAMS);
     const [search, setSearch] = useState("");
     const [acqAfter, setAcqAfter] = useState("");
     const [acqBefore, setAcqBefore] = useState("");
@@ -57,7 +58,7 @@ export function ObservationDisplay({ title = "Observations", tagFilters: externa
     }
 
     const controls = (
-        <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%', flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
             <TextField size="small" placeholder="Search name..." value={search} onChange={(event) => setSearch(event.target.value)} sx={{ width: 200 }} />
             <TextField size="small" label="From" type="date" slotProps={{ inputLabel: { shrink: true } }} value={acqAfter} onChange={(event) => setAcqAfter(event.target.value)} sx={{ width: 160 }} />
             <TextField size="small" label="To" type="date" slotProps={{ inputLabel: { shrink: true } }} value={acqBefore} onChange={(event) => setAcqBefore(event.target.value)} sx={{ width: 160 }} />
@@ -67,7 +68,7 @@ export function ObservationDisplay({ title = "Observations", tagFilters: externa
     );
 
     const filterChips = (
-        <Stack direction="row" spacing={1} alignItems={'center'} sx={{ flexWrap: 'wrap', width: '100%' }}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
             <Chip
                 label="Analyzed"
                 size="medium"
@@ -84,7 +85,7 @@ export function ObservationDisplay({ title = "Observations", tagFilters: externa
 
     const header = (
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'center'}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <ObservationIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
                 <Typography variant='h3'  sx={{ lineHeight: 1, m: 0 }}> {title} </Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
@@ -100,7 +101,7 @@ export function ObservationDisplay({ title = "Observations", tagFilters: externa
                 {header}
                 {controls}
                 {filterChips}
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }} justifyContent={'center'}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <Typography variant='h4'> Loading... </Typography>
                 </Stack>
             </Container>
@@ -113,7 +114,7 @@ export function ObservationDisplay({ title = "Observations", tagFilters: externa
                 {header}
                 {controls}
                 {filterChips}
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }} justifyContent={'center'}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <Typography variant='h4'> No observations match this filter </Typography>
                 </Stack>
             </Container>

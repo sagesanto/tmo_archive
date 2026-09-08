@@ -30,8 +30,8 @@ async function webGetMPCCandidate(
     return data[0];
 }
 
-function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<Analysis[]>>) {
-    return useInfiniteQuery<Page<MPCCandidate[]>, Error, InfiniteData<Page<Analysis[]>, number>, readonly unknown[], number>({
+function makeInfiniteQuery(queryKey: readonly unknown[], queryFn: (context: { pageParam: number }) => Promise<Page<MPCCandidate[]>>) {
+    return useInfiniteQuery<Page<MPCCandidate[]>, Error, InfiniteData<Page<MPCCandidate[]>, number>, readonly unknown[], number>({
         initialPageParam: 1,
         queryKey: queryKey,
         queryFn: queryFn,

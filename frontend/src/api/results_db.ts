@@ -56,6 +56,19 @@ export function getResultsDBs(params: ResultsDBsParams = {}) {
     return makeInfiniteQuery(queryKey, ({ pageParam = 1 }) => webGetResultsDBs(pageParam, params))
 }
 
+export function getResultsDBsCount(params: ResultsDBsParams = {}, enabled: boolean = true) {
+    const { sort, ...countParams } = params;
+    return useQuery<number, Error>({
+        queryKey: ["results_dbs_count", countParams],
+        queryFn: async () => {
+            const { data } = await axios.get<number>(`${ENDPOINT}/count`, { params: countParams });
+            return data;
+        },
+        enabled,
+        placeholderData: keepPreviousData,
+    });
+}
+
 async function webGetResultsDB(
     natural_key: string,
     options?: { signal?: AbortSignal },

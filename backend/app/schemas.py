@@ -130,6 +130,7 @@ class FlagReturn(BaseModel):
     description: str
     color: str
     category: str
+    scope: str = "object"  # object, observation, run, mpc. non-object flags are inherited from an ancestor
     attached: Optional[datetime] = None
 
 class DetectedObjectOverview(BaseModel):
@@ -252,6 +253,18 @@ class MPCIdentification(BaseModel):
         except:
             status = self.status
         return status
+
+class AuditEventOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    target_type: str
+    target_key: str
+    action: str
+    flag_name: Optional[str] = None
+    actor: str
+    note: Optional[str] = None
+    created_at: datetime
+
 
 class AppConfigOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

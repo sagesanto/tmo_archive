@@ -1,32 +1,32 @@
 import { Chip, darken } from "@mui/material";
 
 
-export function DisplayChip({label, icon, onClick = () => {}, extras={}}: {label:string, icon?: React.ReactNode, onClick?: () => void, extras?: object}) {
+export function DisplayChip({label, icon, onClick = () => {}, extras={}, color='primary'}: {label:string, icon?: React.ReactElement, onClick?: () => void, extras?: object, color?: 'primary' | 'secondary'}) {
     return (
         <Chip
             icon={icon}
             label={label}
-            color='primary'
+            color={color}
             onClick={(event) => { event.stopPropagation(); event.nativeEvent.stopImmediatePropagation(); onClick();} }
             sx={{
                 ".MuiChip-deleteIcon": {
-                    color: (theme) => theme.palette.primary.main,
+                    color: (theme) => theme.palette[color].main,
                     "&:hover": {
-                        color: (theme) => theme.palette.primary.contrastText,
+                        color: (theme) => theme.palette[color].contrastText,
                     },
                 },
                 border: "2px solid",
-                borderColor: (theme) => theme.palette.primary.main,
-                backgroundColor: "transparent", 
-                color: (theme) => theme.palette.primary.main, 
+                borderColor: (theme) => theme.palette[color].main,
+                backgroundColor: "transparent",
+                color: (theme) => theme.palette[color].main,
                 "&:hover": {
-                    backgroundColor: (theme) => theme.palette.primary.main,
-                    color: (theme) => theme.palette.primary.contrastText, 
-                    borderColor: (theme) => theme.palette.primary.main,
+                    backgroundColor: (theme) => theme.palette[color].main,
+                    color: (theme) => theme.palette[color].contrastText,
+                    borderColor: (theme) => theme.palette[color].main,
                     ":hover .MuiChip-deleteIcon": {
-                        color: (theme) => theme.palette.primary.contrastText,
+                        color: (theme) => theme.palette[color].contrastText,
                         "&:hover": {
-                            color: (theme) => darken(theme.palette.primary.contrastText,0.1),
+                            color: (theme) => darken(theme.palette[color].contrastText,0.1),
                         },
                     },
                 },
@@ -37,6 +37,6 @@ export function DisplayChip({label, icon, onClick = () => {}, extras={}}: {label
     );
 }
 
-export function LoadingChip({icon}: { icon?: React.ReactNode}) { 
+export function LoadingChip({icon}: { icon?: React.ReactElement}) {
     return ( <DisplayChip label="Loading..." icon={icon} onClick = {()=>{}} extras= {{}}/> );
 }

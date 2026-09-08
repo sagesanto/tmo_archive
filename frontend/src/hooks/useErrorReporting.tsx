@@ -9,7 +9,7 @@ export const ErrorReportContext = createContext({
 
 export const useErrorReports = () => useContext(ErrorReportContext);
 
-export function ErrorReportProvider({ children }) {
+export function ErrorReportProvider({ children }: { children: React.ReactNode }) {
     function reportError(report: { error_message: string, misc: string | null }) {
         webCreateError(report);
     }

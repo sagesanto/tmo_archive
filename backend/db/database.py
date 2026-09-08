@@ -29,9 +29,14 @@ with open(join(dirname(__file__),"flags.json"),'r') as f:
 with open(join(dirname(__file__),"obs_tags.json"),'r') as f:
     OBS_TAGS = json.load(f) 
 
-# create set of flags if not exist
+# create set of flags if not exist. definitions in flags.json stay authoritative, so edits
+# there (notably scope) reach rows that already exist
 def create_starter_flags(engine):
-    stmt = insert(Flag).values(STARTER_FLAGS).on_conflict_do_nothing(index_elements=["name"])
+    stmt = insert(Flag).values(STARTER_FLAGS)
+    stmt = stmt.on_conflict_do_update(
+        index_elements=["name"],
+        set_={k: stmt.excluded[k] for k in ("description", "category", "color", "scope")},
+    )
     with engine.begin() as conn:
         conn.execute(stmt)
         
@@ -101,7 +106,7 @@ def reset_db(full=False):
         session_maker = sessionmaker(bind=engine)
         
     # drop everything except the user-created stuff
-    preserve = ['annotations', 'flags', 'object_flag', 'tags', 'observation_tag', "app_config"]
+    preserve = ['annotations', 'flags', 'object_flag', 'entity_flag', 'audit_events', 'tags', 'observation_tag', "app_config"]
     if full:
         preserve = []
     children_first_tables = reversed(Base.metadata.sorted_tables)  # tables sorted to drop children first, avoid conflicts 

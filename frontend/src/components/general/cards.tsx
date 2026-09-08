@@ -16,7 +16,7 @@ export function CardContainer({ children, sx = {}, inner_sx={}, onClick }: { chi
 export function LargeLoadingCard() {
     return (
         <CardContainer>
-            <Stack direction="column" spacing={2} alignItems={'left'} sx={{ width: '100%' }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: 'left', width: '100%' }}>
                 <Skeleton variant="text" width={"30%"} sx={{ fontSize: (theme) => theme.typography.h5.fontSize }} />
                 <Skeleton variant="rectangular" width="100%" height={150} />
             </Stack>
@@ -27,7 +27,7 @@ export function LargeLoadingCard() {
 export function MediumLoadingCard() {
     return (
         <CardContainer>
-            <Stack direction="column" spacing={2} alignItems={'left'} sx={{ width: '100%' }}>
+            <Stack direction="column" spacing={2} sx={{ alignItems: 'left', width: '100%' }}>
                 <Skeleton variant="text" width={"100%"} sx={{ fontSize: (theme) => theme.typography.h5.fontSize }} />
             </Stack>
         </CardContainer>

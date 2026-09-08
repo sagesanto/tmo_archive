@@ -6,10 +6,10 @@ import { EditIcon, HomeIcon, ObjectIcon } from "@assets/icons";
 import theme from "@config/theme";
 // import { Circle, Delete, DeleteOutline } from "@mui/icons-material";
 
-export function HomeButton() {
+export function HomeButton({ sx = {} }: { sx?: object }) {
     let navigate = useNavigate();
     return (
-        <IconButton onClick={() => navigate(AppRoutes.home)}>
+        <IconButton onClick={() => navigate(AppRoutes.home)} sx={sx}>
             <Box
                 sx={{
                     position: "relative",

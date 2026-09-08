@@ -1,4 +1,5 @@
 # overview of results dbs
+from dataclasses import dataclass
 from fastapi import APIRouter, Depends, Query, HTTPException
 
 from sqlalchemy.orm import Session
@@ -22,10 +23,31 @@ SORT_OPTIONS = {
     "n_runs_desc": func.coalesce(n_runs_subq.c.n_runs, 0).desc(),
 }
 
+@dataclass
+class ResultsDBFilterParams:
+    natural_key: str | None = Query(default=None)
+    search: str | None = Query(default=None)
+
+    def apply(self, stmt):
+        if self.natural_key is not None:
+            stmt = stmt.where(ResultsDB.natural_key == self.natural_key)
+        if self.search is not None:
+            stmt = stmt.where(ResultsDB.display_name.ilike(f"%{self.search}%"))
+        return stmt
+
+
+@router.get("/count")
+def count_results_dbs(
+    filters: ResultsDBFilterParams = Depends(),
+    db: Session = Depends(get_session),
+) -> int:
+    stmt = filters.apply(select(func.count(ResultsDB.id.distinct())))
+    return db.execute(stmt).scalar_one()
+
+
 @router.get("", response_model=list[ResultsDBOverview])
 def list_results_dbs(
-    natural_key: str | None = Query(default=None),
-    search: str | None = Query(default=None),
+    filters: ResultsDBFilterParams = Depends(),
     sort: str = Query(default="date_updated_desc"),
     limit: int = Query(default=100, le=1000),
     offset: int = Query(default=0, ge=0),
@@ -33,19 +55,14 @@ def list_results_dbs(
 ):
     if sort not in SORT_OPTIONS:
         raise HTTPException(status_code=400, detail=f"Unknown sort option: {sort}")
-    stmt = (
+    stmt = filters.apply(
         select(ResultsDB)
         .outerjoin(n_runs_subq, ResultsDB.id == n_runs_subq.c.results_db_id)
         .order_by(SORT_OPTIONS[sort])
     )
 
-    if natural_key is not None:
-        stmt = stmt.where(ResultsDB.natural_key == natural_key)
-    if search is not None:
-        stmt = stmt.where(ResultsDB.display_name.ilike(f"%{search}%"))
-
     stmt = stmt.limit(limit).offset(offset)
     results_dbs = db.execute(stmt).scalars().all()
-    if natural_key is not None and not results_dbs:
+    if filters.natural_key is not None and not results_dbs:
         raise HTTPException(status_code=404, detail="ResultsDB not found")
     return results_dbs

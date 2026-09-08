@@ -1,4 +1,5 @@
 import { ObjectDisplay } from '@components/objects/object_display';
+import type { Object } from '@api/object';
 import { decodeFlagFilters, encodeFlagFilters, FlagFilterState } from '@components/objects/flag_filter_tray';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';

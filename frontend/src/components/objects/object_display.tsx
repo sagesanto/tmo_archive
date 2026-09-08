@@ -8,6 +8,7 @@ import { FilteredCollectionLengthChip, DisplayChip, SelectableCardContainer, Sor
 import { FlagFilterState, FlagFilterTray, NO_FLAGS_KEY } from "./flag_filter_tray";
 import { useDispatch, useSelector } from "react-redux";
 import { useInView } from 'react-intersection-observer'
+import { usePersistedSort } from "@hooks/usePersistedSort";
 
 const SORT_LABELS = ["Highest SNR", "Lowest SNR", "Brightest", "Most Frames", "Newest Analyzed", "Oldest Analyzed"];
 const SORT_PARAMS = ["snr_desc", "snr_asc", "magnitude_asc", "num_frames_desc", "analysis_time_desc", "analysis_time_asc"];
@@ -15,7 +16,7 @@ const SORT_PARAMS = ["snr_desc", "snr_asc", "magnitude_asc", "num_frames_desc", 
 export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designation, selected, setSelected, title = "Objects", classificationFilter = null, onClassificationFilterChange, flagFilters: externalFlagFilters, onFlagFiltersChange }: { analysisKey?: string, observationId?: number, resultsDbId?: number, designation?: string, selected: Array<Object>, setSelected: React.Dispatch<React.SetStateAction<Object[]>>, title: String, classificationFilter?: string | null, onClassificationFilterChange?: (classification: string | null) => void, flagFilters?: FlagFilterState | null, onFlagFiltersChange?: (state: FlagFilterState) => void }) {
     const { ref, inView } = useInView()
 
-    const [sortIndex, setSortIndex] = useState(0);
+    const [sortIndex, setSortIndex] = usePersistedSort("object_sort", SORT_PARAMS);
     const [internalClassification, setInternalClassification] = useState<string | null>(null);
     const [minSnr, setMinSnr] = useState("");
     const [internalFlagFilters, setInternalFlagFilters] = useState<FlagFilterState | null>(null);
@@ -96,7 +97,7 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designa
     let nObj = hasNextPage ? objects.length + 1 : objects.length;
 
     const controls = (
-        <Stack direction="row" spacing={2} alignItems={'center'}>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
             <Select size="small" value={classification ?? ""} displayEmpty onChange={(event) => setClassification(event.target.value || null)} sx={{ minWidth: 180 }}>
                 <MenuItem value="">All Classifications</MenuItem>
                 <MenuItem value="FastMoving">FastMoving</MenuItem>
@@ -109,7 +110,7 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designa
 
     const header = (
         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'center'}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <ObjectIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
                 <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {title} </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
@@ -136,7 +137,7 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designa
             }}>
                 {header}
                 {flagTray}
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }} justifyContent={'center'}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <Typography variant='h4'> Loading... </Typography>
                 </Stack>
             </Container>
@@ -155,7 +156,7 @@ export function ObjectDisplay({ analysisKey, observationId, resultsDbId, designa
             }}>
                 {header}
                 {flagTray}
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }} justifyContent={'center'}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <Typography variant='h4'> No objects to display </Typography>
                 </Stack>
             </Container>

@@ -8,6 +8,8 @@ import { AnalysisIcon, RemoveFromCatalogIcon, EditIcon, ObjectIcon } from '@asse
 import { getAnalysis } from '@api/analysis';
 import { getMPCEncounter } from '@api/mpc_encounter';
 import { MPCChip } from '@components/mpc/candidate_chip';
+import { EntityTarget, getEntityFlags, getFlags } from '@api/flag';
+import { EntityFlagToggle, FlagChip } from '@components/objects/flag_chip';
 // import { UserChip } from '@components/users';
 import { ResultsDBChip } from '@components/results_dbs';
 import { ObservationChip } from '@components/observations';
@@ -38,6 +40,18 @@ function AnalysisDetail() {
 
     const { data: run_record, isLoading, isError, error } = getAnalysis(natural_key);
     const { data: mpc } = getMPCEncounter({ analysis_id: run_record?.id }, Boolean(run_record?.id));
+
+    // flags on the parent dataset, shown here only when actually set. this run's objects inherit them
+    const observation_key = run_record?.observation_key ?? '';
+    const { data: datasetFlags } = getEntityFlags(
+        { target_type: 'observation', target_key: observation_key },
+        Boolean(observation_key),
+    );
+
+    // flags set here are inherited by every object from this run, including ones from a re-ingest
+    const target: EntityTarget = { target_type: 'run', target_key: natural_key };
+    const { data: runFlags } = getFlags(undefined, 'run');
+    const { data: attachedRunFlags } = getEntityFlags(target);
 
     const [infoOpen, setInfoOpen] = useState(false);
     const [fullscreen, setFullscreen] = useState(false);
@@ -91,9 +105,9 @@ function AnalysisDetail() {
                     <Typography variant='caption' sx={{ ml: 0.5 }}>Expand</Typography>
                 </Box>
             ) : (
-                <Stack direction="column" spacing={2} alignItems='flex-start' sx={{ width: '100%' }}>
+                <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', width: '100%' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                        <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
+                        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                             <AnalysisIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                             <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {run_record?.display_name}</Typography>
                             {run_record?.status && (
@@ -111,10 +125,17 @@ function AnalysisDetail() {
                         </Stack>
                     </Box>
                     <Box sx={{ position: 'relative', width: '100%' }}>
-                        <Grid container spacing={1} alignItems={'center'} sx={{ height: 'grow' }}>
+                        <Grid container spacing={1} sx={{ alignItems: 'center', height: 'grow' }}>
                             {mpc && (<MPCChip designation={mpc.designation} />)}
                             <ResultsDBChip natural_key={run_record?.results_db_key ?? ''} />
                             <ObservationChip natural_key={run_record?.observation_key ?? ''} />
+                            {datasetFlags?.map((flag) => (
+                                <FlagChip key={flag.id} flag={flag} />
+                            ))}
+                            {runFlags?.map((flag) => {
+                                const attached = attachedRunFlags?.find((f) => f.id === flag.id);
+                                return <EntityFlagToggle key={flag.id} flag={attached ?? flag} entity={target} />;
+                            })}
                         </Grid>
                         <Typography variant='subtitle2' sx={{ marginTop: '1em' }}>
                             {`Run: ${formatTimestamp(run_record?.analysis_time)} UT | Observed: ${formatTimestamp(run_record?.obs_time)}`}

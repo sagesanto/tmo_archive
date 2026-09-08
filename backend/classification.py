@@ -17,7 +17,8 @@ from sqlalchemy.orm import Session
 from collections import defaultdict
 
 from db.database import get_session
-from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag
+from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag, EntityFlag
+from core.flag_ops import add_entity_flag, add_object_flag, purge_object_flag, remove_entity_flag
 from app.schemas import DetectedObjectOverview
 
 tags: dict[str,Tag] = None
@@ -45,53 +46,50 @@ def detection_mag_classification(logger):
 
         # select objects where their mag > detection mag threshold (maybe by some amt? do we need uncerts here?)
         stmt = (
-            select(DetectedObject)
+            select(DetectedObject, AnalysisRun.detection_limit_mag)
             .join(DetectedObject.analysis_run)
             .where(DetectedObject.magnitude > AnalysisRun.detection_limit_mag + excess_tolerance)
         )
-        too_dim = db.scalars(stmt).all()
-        logger.info(f"{len(too_dim)} objects are too dim")
-        for obj in too_dim:
-            stmt = (
-                insert(ObjectFlag)
-                .values(object_key=obj.natural_key, flag_id=too_dim_flag.id)
-                .on_conflict_do_nothing(index_elements=["object_key", "flag_id"])
-            )
-            db.execute(stmt)
+        rows = db.execute(stmt).all()
+        logger.info(f"{len(rows)} objects are too dim")
+        newly_flagged = 0
+        for obj, limit_mag in rows:
+            note = f"mag {obj.magnitude:.2f}; limit {limit_mag:.2f}"
+            newly_flagged += add_object_flag(db, obj.natural_key, too_dim_flag, "detection_threshold", note)
         db.flush()
-    
+
+    logger.info(f"{newly_flagged} newly flagged")
     logger.info("Done detection threshold")
 
 def mpc_bad_classification(logger):
-    # classify MPC objects with the bad mpc flag if they're associated with an mpc obj that has a bad mpc status
-    # if they have no mpc status that probably means theyre still in the confirmation process which is fine
-    # also, remove bad mpc tags from obs whose status may have previously been bad but now is good
+    # a bad status is intrinsic to the mpc object, so the flag goes on the candidate and every
+    # object under it inherits. nothing here is user-settable, and re-running just re-syncs
+    # against the current status.
+    # if a candidate has no mpc status that probably means it's still in the confirmation process, which is fine
     logger.info("Classifying by MPC object status")
     with get_record_db() as db:
         stmt = select(Flag).where(Flag.name == "Bad MPC")
         bad_mpc_flag = db.execute(stmt).scalar()
 
-        stmt = (
-            select(DetectedObject, MPCStatus.status)
-            .join(AnalysisRun).join(Observation).join(MPCEncounter).join(MPCCandidate)
-            .outerjoin(MPCStatus)
-        )
-        rows = db.execute(stmt).all()
+        # this flag used to be attached per-object. those rows are unreachable now that it is
+        # inherited, so clear out any left over from before
+        purged = purge_object_flag(db, bad_mpc_flag, "mpc_status", "moved to the MPC object")
+        if purged:
+            logger.info(f"cleared {purged} leftover object-level Bad MPC flags")
+
+        rows = db.execute(select(MPCCandidate.designation, MPCStatus.status).outerjoin(MPCStatus)).all()
 
         num_bad = 0
-        for obj, status in rows:
+        changed = 0
+        for designation, status in rows:
             if status is not None and status not in ("None", "lost"):
-                stmt = (
-                    insert(ObjectFlag)
-                    .values(object_key=obj.natural_key, flag_id=bad_mpc_flag.id)
-                    .on_conflict_do_nothing(index_elements=["object_key", "flag_id"])
-                )
-                db.execute(stmt)
+                changed += add_entity_flag(db, "mpc", designation, bad_mpc_flag, "mpc_status", f"MPC status: {status}")
                 num_bad += 1
             else:
-                db.execute(delete(ObjectFlag).where(ObjectFlag.object_key == obj.natural_key, ObjectFlag.flag_id == bad_mpc_flag.id))
+                changed += remove_entity_flag(db, "mpc", designation, bad_mpc_flag, "mpc_status",
+                                              f"MPC status: {status or 'none'}")
         db.flush()
-    logger.info(f"{num_bad} objects have a bad MPC status")
+    logger.info(f"{num_bad} MPC objects have a bad status ({changed} changed)")
     logger.info("Done MPC status")
 
 
@@ -106,17 +104,14 @@ def mpc_vel_classification(logger):
         rows = db.execute(stmt).all()
 
         num_wrong = 0
+        newly_flagged = 0
         for obj, dRA, dDec in rows:
             if abs(obj.v_ra - dRA) > ra_tolerance or abs(obj.v_dec - dDec) > dec_tolerance:
-                stmt = (
-                    insert(ObjectFlag)
-                    .values(object_key=obj.natural_key, flag_id=wrong_velocity_flag.id)
-                    .on_conflict_do_nothing(index_elements=["object_key", "flag_id"])
-                )
-                db.execute(stmt)
+                note = f"ra vel {obj.v_ra:.2f}; expected {dRA:.2f} | dec vel {obj.v_dec:.2f}; expected {dDec:.2f}"
+                newly_flagged += add_object_flag(db, obj.natural_key, wrong_velocity_flag, "mpc_velocity", note)
                 num_wrong += 1
         db.flush()
-    logger.info(f"{num_wrong} objects have an incorrect velocity")
+    logger.info(f"{num_wrong} objects have an incorrect velocity ({newly_flagged} newly flagged)")
     logger.info("Done MPC")
     
 def main():

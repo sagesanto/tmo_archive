@@ -10,6 +10,8 @@ import { AnalysisDisplay } from '@components/analyses';
 import { ObservationDisplay } from '@components/observations';
 import { ObjectDisplay } from '@components/objects/object_display';
 import { Object } from '@api/object';
+import { getEntityFlags } from '@api/flag';
+import { FlagChip } from '@components/objects/flag_chip';
 
 function MPCDetail() {
     let params = useParams();
@@ -21,6 +23,8 @@ function MPCDetail() {
     const { data: info, isLoading, isError } = getMPCIdentification(designation);
     const { data: nObservations } = getObservationsCount({ designation });
     const { data: nAnalyses } = getAnalysesCount({ designation });
+    // set by the mpc status checker, not by hand, so this is read-only everywhere
+    const { data: mpcFlags } = getEntityFlags({ target_type: 'mpc', target_key: designation });
 
     useEffect(() => {
         document.title = "MPC " + designation;
@@ -28,12 +32,15 @@ function MPCDetail() {
 
     return (
         <Stack spacing={2} sx={{ width: '100%', height: '100%', flexGrow: 1, minHeight: 0 }}>
-            <Stack direction="row" spacing={2} alignItems="center">
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
                 <MPCIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
                 <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}>{designation}</Typography>
                 <Box sx={{ display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
                     <FilteredCollectionLengthChip matching={nObservations ?? 0} total={nAnalyses ?? 0} tooltip="Observations / Analyses" />
                 </Box>
+                {mpcFlags?.map((flag) => (
+                    <FlagChip key={flag.id} flag={flag} />
+                ))}
             </Stack>
 
             {isLoading && <CircularProgress />}

@@ -1,7 +1,4 @@
-import { axios } from "@api/axios";
-import { ErrorReport, useCreateErrorReport } from "@api/error";
-import { AnalysisIcon, ErrorIcon } from "@assets/icons";
-import { CatCardContent } from "@components/catalogs";
+import { ErrorIcon } from "@assets/icons";
 import { feedbackUrl } from "@config/feedback";
 import { AppRoutes } from "@config/routes";
 import { Box, Stack, Typography } from "@mui/material";
@@ -32,8 +29,8 @@ export function ErrorMessage({ message, title = "Something's Afoot :(", do_repor
     }, []);
 
     return (
-        <Stack direction="column" spacing={2} justifyContent={"center"} alignItems={'center'} sx={{ width: '100%', ...sx }}>
-            <Stack ref={titleRef} color="primary" direction="row" spacing={2} justifyContent={"center"} alignItems={'center'}>
+        <Stack direction="column" spacing={2} sx={{ alignItems: 'center', justifyContent: "center", width: '100%', ...sx }}>
+            <Stack ref={titleRef} color="primary" direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: "center" }}>
                 <ErrorIcon color="primary" sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
                 <Typography color="primary" variant='h3'>  {title} </Typography>
             </Stack>
@@ -46,7 +43,7 @@ export function ErrorMessage({ message, title = "Something's Afoot :(", do_repor
                     Please report this error!
                 </Typography>
             </a>
-            <Stack direction="row" spacing={2} justifyContent={'center'} alignContent={'center'} >
+            <Stack direction="row" spacing={2} sx={{ justifyContent: 'center', alignContent: 'center' }} >
                 <Box sx={{ borderRadius: 2, border: '2px solid', borderColor: 'secondary.main', overflow: "hidden", aspectRatio: 1 }}>
                     <img src={"/error.png"} alt="Error" style={{ display: "block", objectFit: 'contain', aspectRatio: 1, maxWidth: imgWidth }} />
                 </Box>
@@ -54,6 +51,9 @@ export function ErrorMessage({ message, title = "Something's Afoot :(", do_repor
         </Stack>
     );
 }
+
+// the error-report api module was never ported over from the old project, so the shape lives here
+type ErrorReport = { id: number, error_message: string, source: string, created_at: string };
 
 export function ErrorReportCard({ err }: { err: ErrorReport }) {
     return (
@@ -67,8 +67,8 @@ export function ErrorReportCard({ err }: { err: ErrorReport }) {
 
 export function ErrorReportCardContent({ err }: { err: ErrorReport }) {
     return (
-        <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }}>
+        <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                 <ErrorIcon sx={{ fontSize: (theme) => theme.typography.h4.fontSize }} />
                 <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> { err.error_message } </Typography>
             </Stack>

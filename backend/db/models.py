@@ -5,7 +5,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship, mapped_column as col
 from sqlalchemy.dialects.postgresql import JSONB, JSON
-from sqlalchemy import UniqueConstraint, Index, String, Integer, Float, Boolean, ForeignKey
+from sqlalchemy import UniqueConstraint, Index, String, Integer, BigInteger, Float, Boolean, ForeignKey
 
 class Base(DeclarativeBase):
     pass
@@ -18,7 +18,7 @@ class ResultsDB(Base):
     display_name: Mapped[str] = col(String,nullable=False)
 
     filename: Mapped[Optional[str]] = col(nullable=True)
-    filesize: Mapped[Optional[int]] = col(nullable=True)
+    filesize: Mapped[Optional[int]] = col(BigInteger, nullable=True)  # results dbs can exceed 2gb
     last_file_update: Mapped[Optional[datetime]] = col(nullable=True)
     date_ingested: Mapped[datetime] = col(server_default=func.now())
     date_updated: Mapped[datetime] = col(server_default=func.now(), onupdate=func.now())
@@ -290,8 +290,12 @@ class Flag(Base):
     description: Mapped[str] = col(nullable=False)
     category: Mapped[str] = col(nullable=False)  # bad, warning, interesting, good
     color: Mapped[str] = col(String, nullable=False)
-    
+    # what the flag is attached to. 'object' flags live in object_flag, the rest live in
+    # entity_flag on a parent and are inherited by that parent's objects at read time
+    scope: Mapped[str] = col(String, nullable=False, server_default="object")  # object, observation, run, mpc
+
     object_flags: Mapped[list["ObjectFlag"]] = relationship(back_populates="flag", cascade="all, delete-orphan")
+    entity_flags: Mapped[list["EntityFlag"]] = relationship(back_populates="flag", cascade="all, delete-orphan")
 
 class ObjectFlag(Base):
     __tablename__ = "object_flag"
@@ -306,6 +310,46 @@ class ObjectFlag(Base):
     attached: Mapped[datetime] = col(server_default=func.now())
         
     flag: Mapped["Flag"] = relationship(back_populates="object_flags")
+
+class EntityFlag(Base):
+    # a flag attached to an object's ancestor (observation, run, mpc candidate). objects inherit
+    # these at read time rather than getting their own copies, so re-analysis picks them up for
+    # free and detaching here can't leave stale rows behind
+    __tablename__ = "entity_flag"
+    __table_args__ = (
+        UniqueConstraint("target_type", "target_key", "flag_id", name="uq_entity_flag"),
+        Index("ix_entity_flag_target", "target_type", "target_key"),
+    )
+    id: Mapped[int] = col(primary_key=True)
+
+    # no foreign key, attached by natural key to survive reingest
+    target_type: Mapped[str] = col(String, nullable=False)  # observation, run, mpc
+    target_key: Mapped[str] = col(String, nullable=False)   # natural key, or designation for mpc
+    flag_id: Mapped[int] = col(ForeignKey("flags.id"), nullable=False)
+    attached: Mapped[datetime] = col(server_default=func.now())
+
+    flag: Mapped["Flag"] = relationship(back_populates="entity_flags")
+
+
+class AuditEvent(Base):
+    # append-only record of what happened to an entity. rows are only written when something
+    # actually changed, so re-running a classification pass over unchanged data logs nothing
+    __tablename__ = "audit_events"
+    __table_args__ = (
+        Index("ix_audit_target", "target_type", "target_key"),
+    )
+    id: Mapped[int] = col(primary_key=True)
+
+    # no foreign key, attached by natural key to survive reingest
+    target_type: Mapped[str] = col(String, nullable=False)  # object, observation, run, mpc
+    target_key: Mapped[str] = col(String, nullable=False)
+
+    action: Mapped[str] = col(String, nullable=False)  # flag_added, flag_removed
+    flag_name: Mapped[Optional[str]] = col(String, nullable=True)  # flag names are natural keys. no fk, history outlives the flag
+    actor: Mapped[str] = col(String, nullable=False)  # 'user', or the classification step's own name
+    note: Mapped[Optional[str]] = col(String, nullable=True)
+    created_at: Mapped[datetime] = col(server_default=func.now())
+
 
 class Tag(Base):  # tags for types of datasets
     __tablename__ = "tags"

@@ -38,7 +38,7 @@ export function TagFilterTray({ state, onChange }: { state: TagFilterState, onCh
     }
 
     return (
-        <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} sx={{ width: '100%', flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
             {tags?.map((tag) => (
                 <FlagFilterChip
                     key={tag.id}

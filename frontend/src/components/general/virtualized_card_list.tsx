@@ -2,7 +2,7 @@ import { Box } from "@mui/material";
 import { forwardRef, useEffect, useRef, useState } from "react";
 import AutoSizer from "react-virtualized-auto-sizer";
 import InfiniteLoader from 'react-window-infinite-loader';
-import { FixedSizeList } from 'react-window';
+import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { MediumLoadingCard } from "./cards";
 
 const GUTTER_SIZE = 18;
@@ -68,10 +68,10 @@ export function VirtualizedCardList<T>({ items, hasNextPage, loadNextPage, nObj,
     }
     const itemCount = hasNextPage ? items.length + 1 : items.length;
 
-    const ItemRenderer = ({ index, style }) => {
+    const ItemRenderer = ({ index, style }: ListChildComponentProps) => {
         const fullStyle = {
             ...style,
-            top: style.top + GUTTER_SIZE,
+            top: Number(style.top) + GUTTER_SIZE,
             paddingLeft: 10, paddingRight: -10
         }
 
@@ -93,7 +93,7 @@ export function VirtualizedCardList<T>({ items, hasNextPage, loadNextPage, nObj,
         );
     }
 
-    const innerElementType = forwardRef(({ style, ...rest }, ref) => (
+    const innerElementType = forwardRef<HTMLDivElement, { style?: React.CSSProperties }>(({ style, ...rest }, ref) => (
         <div
             style={{
                 ...style,

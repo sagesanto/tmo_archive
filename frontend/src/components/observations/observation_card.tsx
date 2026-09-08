@@ -19,7 +19,7 @@ export function ObservationCard({ natural_key }: { natural_key: string }) {
         );
     }
 
-    if (isLoading) {
+    if (isLoading || !observation) {
         return (
             <MediumLoadingCard />
         );
@@ -38,12 +38,12 @@ export function ObservationCard({ natural_key }: { natural_key: string }) {
 export function ObservationCardContent({ observation }: { observation: Observation }) {
     let navigate = useNavigate();
     return (
-        <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'space-between'} sx={{ width: '100%' }}>
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }}>
+        <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'space-between', width: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                     <ObservationIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
-                    <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-                        <Stack direction="row" spacing={1} alignItems={'center'}>
+                    <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                             {observation.name ? <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {observation.name} </Typography> :  <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {observation.display_name} </Typography> }
                             <CollectionLengthChip length={observation.n_runs} tooltip="Analysis Runs" />
                             {observation.tags?.map((tag) => (

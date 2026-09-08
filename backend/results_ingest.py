@@ -152,15 +152,18 @@ def ingest_images(res_db: SQLiteDB, run_record: AnalysisRun, thumbnail_dir: str)
     str_w = len(str(N))
     for i, row in enumerate(img_rows):
         write_out(f"[{i+1:{str_w}}/{N}] Ingesting image {row.get('Name')}", level=logging.INFO)
-        w, h = row['Width'], row['Height']
-        dtype = row['DataType']
-        key = create_source_key(row, 'Images')
-        blob_refs.append(
-            ingest_blob(row['Data'], w, h, 'Images', dtype, run_record, key,
-                        image_type=norm_np(row['ImageType']),
-                        image_index=norm_np(row['ImageIndex']),
-                        thumbnail_dir=thumbnail_dir)
-        )
+        try:
+            w, h = row['Width'], row['Height']
+            dtype = row['DataType']
+            key = create_source_key(row, 'Images')
+            blob_refs.append(
+                ingest_blob(row['Data'], w, h, 'Images', dtype, run_record, key,
+                            image_type=norm_np(row['ImageType']),
+                            image_index=norm_np(row['ImageIndex']),
+                            thumbnail_dir=thumbnail_dir)
+            )
+        except Exception as e:
+            write_out(f"Failed to ingest image: {e}",level=logging.ERROR)
     return blob_refs
 
 
@@ -217,17 +220,21 @@ def ingest_objects(db: Session, res_db: SQLiteDB, run_record: AnalysisRun, thumb
         objects.append(det_obj)
 
         if row.get("SubFrame") is not None:
-            w, h = row['SubFrameWidth'], row['SubFrameHeight']
-            dtype = 'Single'  # all cutouts are single i think
-            key = create_source_key(row, 'Objects')
-            ref = ingest_blob(row['SubFrame'], w, h, 'Objects', dtype, run_record, key,
-                              image_type=None,
-                              image_index=norm_np(row['ObjectIndex']),
-                              thumbnail_dir=thumbnail_dir, zscale=True, cmap='viridis')
-            db.add(ref)
-            db.flush()
-            det_obj.blob_ref_id = ref.id
-            blob_refs.append(ref)
+            try:
+                w, h = row['SubFrameWidth'], row['SubFrameHeight']
+                dtype = 'Single'  # all cutouts are single i think
+                key = create_source_key(row, 'Objects')
+                ref = ingest_blob(row['SubFrame'], w, h, 'Objects', dtype, run_record, key,
+                                  image_type=None,
+                                  image_index=norm_np(row['ObjectIndex']),
+                                  thumbnail_dir=thumbnail_dir, zscale=True, cmap='viridis')
+                db.add(ref)
+                db.flush()
+                det_obj.blob_ref_id = ref.id
+                blob_refs.append(ref)
+            except Exception as e:
+                # subframes are sometimes entirely nan. keep the object, skip its blob
+                write_out(f"Failed to ingest subframe for object {row['ObjectIndex']}: {e}", level=logging.WARNING)
     return objects, blob_refs
 
 

@@ -11,6 +11,8 @@ import { formatTimestamp } from '@utils/formatters';
 import { ErrorMessage } from '@components/general/error';
 import { RunObjectTabs } from '@components/general/run_object_tabs';
 import { MPCChip } from '@components/mpc/candidate_chip';
+import { EntityTarget, getEntityFlags, getFlags } from '@api/flag';
+import { EntityFlagToggle } from '@components/objects/flag_chip';
 
 function ObservationDetail() {
     let params = useParams();
@@ -20,6 +22,12 @@ function ObservationDetail() {
 
     const { data: observation, isLoading, isError, error } = getObservation(natural_key);
     const { data: mpc } = getMPCEncounter({ observation_id: observation?.id }, Boolean(observation?.id));
+
+    // flags set here are inherited by every object under this dataset, including ones that
+    // show up later from a re-analysis
+    const target: EntityTarget = { target_type: 'observation', target_key: natural_key };
+    const { data: obsFlags } = getFlags(undefined, 'observation');
+    const { data: attachedFlags } = getEntityFlags(target);
 
     useEffect(() => {
         document.title = "Observation " + natural_key;
@@ -54,7 +62,7 @@ function ObservationDetail() {
     return (
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                     <ObservationIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                    {observation?.name ? <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {observation?.name}</Typography> : <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {observation?.display_name}</Typography>}
                    <Box sx={{ flexGrow: 1 }} />
@@ -66,11 +74,15 @@ function ObservationDetail() {
                 </Stack>
             </Box>
             {observation && <ObservationInfoModal open={infoOpen} onClose={() => setInfoOpen(false)} observation={observation} />}
-            <Grid container spacing={1} alignItems={'center'} sx={{ height: 'grow' }}>
+            <Grid container spacing={1} sx={{ alignItems: 'center', height: 'grow' }}>
                 {mpc && (<MPCChip designation={mpc.designation} />)}
                 {observation?.tags?.map((tag) => (
                     <TagChip key={tag.id} tag={tag} toFilter />
                 ))}
+                {obsFlags?.map((flag) => {
+                    const attached = attachedFlags?.find((f) => f.id === flag.id);
+                    return <EntityFlagToggle key={flag.id} flag={attached ?? flag} entity={target} />;
+                })}
             </Grid>
             {observation?.description &&<Typography variant='subtitle1' >
                 {observation?.description}

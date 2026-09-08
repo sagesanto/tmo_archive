@@ -25,7 +25,7 @@ function ConfigField({ configKey, label, value }: { configKey: string, label: st
     useEffect(() => { setDraft(String(value ?? '')); }, [value]);
 
     return (
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
             <TextField size="small" type="number" label={label} value={draft} onChange={(event) => setDraft(event.target.value)} sx={{ width: 300 }} />
             <Button size="small" variant="outlined" onClick={() => setConfig.mutate({ key: configKey, value: Number(draft) })}>
                 Save
@@ -99,7 +99,7 @@ export default function Admin() {
 
     return (
         <Container sx={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1.5em' }}>
-            <Stack direction="row" spacing={2} alignItems={'center'}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
                 <AdminIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize }} />
                 <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}>Admin</Typography>
             </Stack>

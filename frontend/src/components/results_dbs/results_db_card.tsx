@@ -18,7 +18,7 @@ export function ResultsDBCard({ natural_key }: { natural_key: string }) {
         );
     }
 
-    if (isLoading) {
+    if (isLoading || !results_db) {
         return (
             <MediumLoadingCard />
         );
@@ -37,12 +37,12 @@ export function ResultsDBCard({ natural_key }: { natural_key: string }) {
 export function ResultsDBCardContent({ results_db }: { results_db: ResultsDB }) {
     let navigate = useNavigate();
     return (
-        <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'space-between'} sx={{ width: '100%' }}>
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%' }}>
+        <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'space-between', width: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                     <ResultsDBIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
-                    <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-                        <Stack direction="row" spacing={1} alignItems={'center'}>
+                    <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                             <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {results_db.display_name} </Typography>
                             <CollectionLengthChip length={results_db.n_runs} tooltip="Analysis Runs" />
                         </Stack>

@@ -8,6 +8,7 @@ from collections import defaultdict
 from db.database import get_session
 from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag, MPCEncounter
 from app.schemas import DetectedObjectOverview
+from core.flag_inherit import any_flag_exists, attach_flags
 
 router = APIRouter(prefix="/objects", tags=["objects"])
 
@@ -55,24 +56,19 @@ class ObjectFilterParams:
             stmt = stmt.where(DetectedObject.type == self.type)
         if self.min_snr is not None:
             stmt = stmt.where(DetectedObject.snr >= self.min_snr)
-        has_any_flag = exists().where(ObjectFlag.object_key == DetectedObject.natural_key)
+        # flags inherited from an ancestor count the same as ones attached to the object itself
+        has_any_flag = any_flag_exists()
 
         include_conditions = []
         if self.has_flags:
-            include_conditions.append(exists().where(
-                ObjectFlag.object_key == DetectedObject.natural_key,
-                ObjectFlag.flag_id.in_(self.has_flags),
-            ))
+            include_conditions.append(any_flag_exists(self.has_flags))
         if self.no_flags is True:
             include_conditions.append(~has_any_flag)
         if include_conditions:
             stmt = stmt.where(or_(*include_conditions))
 
         if self.excludes_flags:
-            stmt = stmt.where(~exists().where(
-                ObjectFlag.object_key == DetectedObject.natural_key,
-                ObjectFlag.flag_id.in_(self.excludes_flags),
-            ))
+            stmt = stmt.where(~any_flag_exists(self.excludes_flags))
         if self.no_flags is False:
             stmt = stmt.where(has_any_flag)
         return stmt
@@ -101,21 +97,5 @@ def list_objects(
 
     stmt = stmt.limit(limit).offset(offset)
     objects = db.execute(stmt).scalars().all()
-    
-    # get and attach flags carried by objs
-    keys = [o.natural_key for o in objects]
-    rows = db.execute(
-        select(ObjectFlag.object_key, ObjectFlag.attached, Flag)
-        .join(Flag, Flag.id == ObjectFlag.flag_id)
-        .where(ObjectFlag.object_key.in_(keys))
-    ).all()
-    
-    flags_by_key = defaultdict(list)
-    for object_key, attached, flag in rows:
-        flag.attached = attached
-        flags_by_key[object_key].append(flag)
-        
-    for o in objects:
-        o.flags = flags_by_key.get(o.natural_key, [])
-        
+    attach_flags(db, objects)
     return objects

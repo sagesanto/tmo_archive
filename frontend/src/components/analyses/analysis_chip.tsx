@@ -20,7 +20,7 @@ export function AnalysisChip( { natural_key }: {natural_key: string}) {
         );
     }
     
-    if (isError || (!isLoading && !analysis)) {
+    if (isError || !analysis) {
         return ( 
             <Chip
                 icon={<AnalysisIcon />}
@@ -53,7 +53,7 @@ export function AnalysisObjChip( { natural_key }: {natural_key: string}) {
         );
     }
     
-    if (isError || (!isLoading && !analysis)) {
+    if (isError || !analysis) {
         return ( 
             <Chip
                 icon={<AnalysisIcon />}

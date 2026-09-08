@@ -4,7 +4,7 @@
         "jsx": "react-jsx",
         "module": "ESNext",
         "moduleResolution": "node",
-        "target": "ES6",
+        "target": "ES2020",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
@@ -19,5 +19,17 @@
             "@state/*": ["state/*"],
             "@utils/*": ["utils/*"],
         }
-    }
+    },
+    // recycled from the old project, unreachable from main.jsx. kept for reference, not type checked
+    "exclude": [
+        "src/components/objects/old_object_display.tsx",
+        "src/components/objects/popups.tsx",
+        "src/components/objects/cutout.tsx",
+        "src/components/general/comments.tsx",
+        "src/components/general/selection_actions.tsx",
+        "src/components/general/add_flag_button.tsx",
+        "src/components/general/add_flag_popups.tsx",
+        "src/components/general/file_upload.tsx",
+        "src/components/general/index copy.ts"
+    ]
 }

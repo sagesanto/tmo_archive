@@ -47,7 +47,7 @@ function ResultsDBDetail() {
     return (
         <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                <Stack direction="row" spacing={2} alignItems='center' sx={{ width: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%' }}>
                     <ResultsDBIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
                     <Typography variant='h3' sx={{ lineHeight: 1, m: 0 }}> {results_db?.display_name}</Typography>
                 </Stack>

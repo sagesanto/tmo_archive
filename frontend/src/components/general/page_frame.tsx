@@ -96,7 +96,7 @@ export function PageFrame() {
                         {topbar_items.map((item) => (
                             <CardActionArea>
                                 <NavLink to={item.route} key={item.name} style={{ textDecoration: "none", color: "inherit" }}>
-                                    <Stack direction={"row"} alignItems={"center"} spacing={1} key={item.name} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
+                                    <Stack direction={"row"} spacing={1} key={item.name} sx={{ alignItems: "center", padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                         {item.icon}
                                         <Typography key={item.name} sx={{ lineHeight: 1, m: 0 }} variant="h4">
                                             {item.name}
@@ -108,7 +108,7 @@ export function PageFrame() {
                         {
                             <CardActionArea>
                                 <NavLink to={admin_item.route} key={admin_item.name} style={{ textDecoration: "none", color: "inherit" }}>
-                                    <Stack direction={"row"} alignItems={"center"} spacing={1} key={admin_item.name} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(admin_item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
+                                    <Stack direction={"row"} spacing={1} key={admin_item.name} sx={{ alignItems: "center", padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith(admin_item.route) ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                         {admin_item.icon}
                                         <Typography key={admin_item.name} sx={{ lineHeight: 1, m: 0 }} variant="h4">
                                             {admin_item.name}
@@ -118,7 +118,7 @@ export function PageFrame() {
                             </CardActionArea>
                         }
                         <CardActionArea ref={anchorRef} id={"moreClickable"} onClick={handleMoreClick} aria-haspopup="true" aria-expanded={open ? 'true' : undefined} aria-controls={open ? 'basic-menu' : undefined}>
-                            <Stack direction={"row"} alignItems={"center"} spacing={1} sx={{ padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith("/more") ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
+                            <Stack direction={"row"} spacing={1} sx={{ alignItems: "center", padding: 1, justifyContent: 'center', borderBottom: location.pathname.startsWith("/more") ? `3px solid ${theme.palette.secondary.contrastText}` : "none", }}>
                                 <ExpandMore sx={{ fontSize: top_bar_iconsize }} />
                                 <Typography variant="h4" sx={{ lineHeight: 1, m: 0 }}>
                                     More
@@ -142,7 +142,7 @@ export function PageFrame() {
                             {dropdown_items.map((item) => (
                                 <MenuItem key={item.name} sx={{ height: barRef.current ? barRef.current.offsetHeight : undefined, }} onClick={handleClose}>
                                     <NavLink to={item.route} style={{ textDecoration: "none", color: "inherit" }}>
-                                        <Stack direction={"row"} alignItems={"center"} spacing={1} sx={{ padding: 1, justifyContent: 'center' }}>
+                                        <Stack direction={"row"} spacing={1} sx={{ alignItems: "center", padding: 1, justifyContent: 'center' }}>
                                             {item.icon}
                                             <Typography variant="h4">
                                                 {item.name}
@@ -152,7 +152,7 @@ export function PageFrame() {
                                 </MenuItem>
                             ))}
                             <MenuItem sx={{ height: barRef.current ? barRef.current.offsetHeight : undefined, }} onClick={() => { handleClose(); window.open(feedbackUrl, "_blank", "noopener,noreferrer") }}>
-                                <Stack direction={"row"} alignItems={"center"} spacing={1} sx={{ padding: 1, justifyContent: 'center' }}>
+                                <Stack direction={"row"} spacing={1} sx={{ alignItems: "center", padding: 1, justifyContent: 'center' }}>
                                     <OpenInNew sx={{ fontSize: top_bar_iconsize }} />
                                     <Typography variant="h4">
                                         Feedback
@@ -164,7 +164,7 @@ export function PageFrame() {
                 </Toolbar>
             </AppBar>
             <Box color="primary" sx={{ paddingTop: `${navHeight}px`, flexDirection: "column", display: 'flex', justifyContent: 'flex-start', alignItems: 'center', width: '100%' }}>
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ backgroundColor: (theme) => theme.palette.primary.main, width: '100%' }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', backgroundColor: (theme) => theme.palette.primary.main, width: '100%' }}>
                     <Warning sx={{ fontSize: (theme) => theme.typography.h5.fontSize, color: 'primary.contrastText' }} />
                     <Typography variant='h5' sx={{ color: 'primary.contrastText',  lineHeight: 1, m: 0 }}>  Alpha Version </Typography>
                     <Typography variant='body1' sx={{ color: 'primary.contrastText', fontWeight: 'normal' }}>

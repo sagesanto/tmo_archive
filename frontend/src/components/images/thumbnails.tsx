@@ -77,10 +77,7 @@ export function ObjectSyntheticImage({ object_key, sx = { width: "100%", height:
     if (isError) {
         return <Card variant="outlined" sx={{ width: "100%", height: "100%" }}>
             <Box
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                sx={{ height: "100%", width: "100%" }}
+                sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", width: "100%" }}
             >
                 <Typography variant="body1" color="text.secondary">
                     {error?.message || "Unknown error loading object synthetic image :("}

@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from db.database import init_db
-from app.routers import objects, analyses, blobs, results_db, flags, observations, mpcs, tags, admin_config, admin_ingest
+from app.routers import objects, analyses, blobs, results_db, flags, observations, mpcs, tags, audit, admin_config, admin_ingest
 
 app = FastAPI()
 
@@ -22,6 +22,7 @@ app.include_router(observations.router, prefix="/api")
 app.include_router(mpcs.router, prefix="/api")
 app.include_router(flags.router, prefix="/api")
 app.include_router(tags.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
 app.include_router(admin_config.router, prefix="/api")
 app.include_router(admin_ingest.router, prefix="/api")
 

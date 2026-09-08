@@ -38,7 +38,7 @@ export function FlagFilterTray({ state, onChange }: { state: FlagFilterState, on
     }
 
     return (
-        <Stack direction="row" spacing={1} useFlexGap alignItems={'center'} sx={{ width: '100%', flexWrap: 'wrap' }}>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ alignItems: 'center', width: '100%', flexWrap: 'wrap' }}>
             {flags?.map((flag) => (
                 <FlagFilterChip
                     key={flag.id}

@@ -20,7 +20,7 @@ export function ObjectCard({ natural_key }: { natural_key: string }) {
         );
     }
 
-    if (isLoading) {
+    if (isLoading || !obj) {
         return (
             <MediumLoadingCard />
         );
@@ -39,12 +39,12 @@ export function ObjectCard({ natural_key }: { natural_key: string }) {
 export function ObjectCardContent({ obj }: { obj: Object }) {
     let navigate = useNavigate();
     return (
-        <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%' }}>
-            <Stack direction="row" spacing={2} alignItems={'space-between'} sx={{ width: '100%'  }}>
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ width: '100%', minWidth: 0 }}>
+        <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%' }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'space-between', width: '100%'  }}>
+                <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%', minWidth: 0 }}>
                     <ObjectIcon sx={{ fontSize: (theme) => theme.typography.h3.fontSize, display: 'block' }} />
-                    <Stack direction="column" spacing={2} padding={0.5} alignItems={'flex-start'} justifyContent={"center"} sx={{ width: '100%', minWidth: 0 }}>
-                        <Stack direction="row" spacing={1} alignItems={'center'} justifyContent={'center'} sx={{ flexWrap: 'nowrap', overflow: 'hidden', width: '100%', minWidth: 0 }}>
+                    <Stack direction="column" spacing={2} sx={{ alignItems: 'flex-start', justifyContent: "center", padding: 0.5, width: '100%', minWidth: 0 }}>
+                        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'nowrap', overflow: 'hidden', width: '100%', minWidth: 0 }}>
                             <Typography variant='h5' sx={{ whiteSpace: "nowrap", flexShrink: 0 }}> {obj.display_name} </Typography>
                             {obj.flags?.map((flag) => (
                                 <FlagChip key={flag.id} flag={flag} />

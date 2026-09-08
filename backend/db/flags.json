@@ -3,66 +3,77 @@
         "name": "Candidate",
         "description": "Possible detection",
         "color": "info.light",
-        "category": "interesting"
+        "category": "interesting",
+        "scope": "object"
     },
     {
         "name": "Likely",
         "description": "Likely NEO",
         "color": "success.light",
-        "category": "good"
+        "category": "good",
+        "scope": "object"
     },
     {
         "name": "Wrong Velocity",
         "description": "Not traveling with the expected velocity",
         "color": "warning.light",
-        "category": "warning"
+        "category": "warning",
+        "scope": "object"
     },
     {
         "name": "Too Dim",
         "description": "Object is dimmer than the detection threshold",
         "color": "warning.light",
-        "category": "warning"
+        "category": "warning",
+        "scope": "object"
     },
     {
         "name": "Strange Location",
         "description": "Near/in a suspicious location like a detector defect or edge",
         "color": "warning.light",
-        "category": "warning"
+        "category": "warning",
+        "scope": "object"
     },
     {
         "name": "Ambiguous",
         "description": "Hard to tell what's going on here",
         "color": "warning.light",
-        "category": "warning"
+        "category": "warning",
+        "scope": "object"
     },
     {
         "name": "Artifact",
         "description": "Visual artifact, like a bad pixel column",
         "color": "error.light",
-        "category": "bad"
+        "category": "bad",
+        "scope": "object"
     },
     {
         "name": "Bad Analysis",
         "description": "Something has compromised this analysis, invalidating the objects",
         "color": "error.light",
-        "category": "bad"
+        "category": "bad",
+        "scope": "run"
     },
     {
         "name": "Bad MPC",
         "description": "This MPC was determined to be a false positive, another object, or otherwise invalid",
         "color": "error.light",
-        "category": "bad"
+        "category": "bad",
+        "scope": "mpc"
     },
     {
         "name": "Bad Dataset",
         "description": "Something has compromised this dataset, invalidating the objects",
         "color": "error.light",
-        "category": "bad"
+        "category": "bad",
+        "scope": "observation"
     },
     {
         "name": "Bad",
         "description": "Something is wrong with this object that is not encapsulated by other flags.",
         "color": "error.light",
-        "category": "bad"
+        "category": "bad",
+        "scope": "object"
     }
 ]

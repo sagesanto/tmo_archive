@@ -1,13 +1,12 @@
 // generalized from https://mui.com/material-ui/react-button-group/#split-button
 
 import * as React from 'react';
-import { Button, ButtonGroup, Grow, Paper, Popper, MenuItem, MenuList, IconButton, Box, Divider } from '@mui/material';
+import { Button, ButtonGroup, ButtonGroupProps, Grow, Paper, Popper, MenuItem, MenuList, IconButton, Box, Divider } from '@mui/material';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
-import { on } from 'events';
 
 
-export function SplitButton<Type>({ labels, values, selected, onClick, onSelectionChange, icon = null, sx, buttonEnabled=true, dropdownEnabled=true, buttonLoading=false }: { labels: string[], values: Type[], selected:Type, onClick: (value: Type) => void, onSelectionChange: (value: Type) => void, icon?: React.ReactNode, sx?: object, buttonEnabled?:Boolean, dropdownEnabled?:Boolean, buttonLoading?:Boolean }) {
+export function SplitButton<Type>({ labels, values, selected, onClick, onSelectionChange, icon = null, sx, buttonEnabled=true, dropdownEnabled=true, buttonLoading=false }: { labels: string[], values: Type[], selected:Type, onClick: (value: Type) => void, onSelectionChange: (value: Type) => void, icon?: React.ReactNode, sx?: { color?: ButtonGroupProps['color'] } & Record<string, any>, buttonEnabled?:Boolean, dropdownEnabled?:Boolean, buttonLoading?:Boolean }) {
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef<HTMLDivElement>(null);
 
