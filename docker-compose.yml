@@ -38,7 +38,7 @@ services:
       RESULTS_HOST_PATH: ${RESULTS_HOST_PATH}
     volumes:
       - thumbnails:/data/thumbnails:ro
-      - ${RESULTS_HOST_PATH}:/data/results:ro
+      - ${RESULTS_HOST_PATH}:/data/results
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,8 +57,8 @@ services:
       OBS_HOST_PATH: ${OBS_HOST_PATH}
     volumes:
       - thumbnails:/data/thumbnails
-      - ${RESULTS_HOST_PATH}:/data/results:ro
-      - ${OBS_HOST_PATH}:/data/obs:ro
+      - ${RESULTS_HOST_PATH}:/data/results
+      - ${OBS_HOST_PATH}:/data/obs
     depends_on:
       postgres:
         condition: service_healthy
