@@ -27,6 +27,9 @@ declare module '@mui/material/styles' {
 
 const selected_opacity = 0.1
 
+export const font_stack = '"Roboto Condensed", "Roboto", "Helvetica", "Arial", sans-serif';
+const body_weight = 700;
+
 export const theme_options: ThemeOptions = {
   palette: {
     mode: 'light',
@@ -45,8 +48,17 @@ export const theme_options: ThemeOptions = {
     }
   },
   typography:{
+    fontFamily: font_stack,
+    fontWeightRegular: body_weight,
     body1: {
       weight: 400
+    }
+  },
+  components: {
+    // chip sets fontFamily and fontSize from the theme but not fontWeight, so its label
+    // would inherit 400 from :root instead of following body_weight
+    MuiChip: {
+      styleOverrides: { root: { fontWeight: body_weight } }
     }
   }
 };

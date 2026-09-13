@@ -4,6 +4,8 @@ export { PageFrame } from "./page_frame";
 export { DisplayChip, LoadingChip } from "./disp_chip";
 export { SplitButton } from "./split_button";
 export { SortSelect } from "./sort_control";
+export { AuditTable } from "./audit_table";
+export { HistoryTabs } from "./history_tabs";
 // export { AddFlagButton } from "./add_flag_button";
 // export { AddFlagPopup } from "./add_flag_popups";
 export { Notifier } from "./notifications";

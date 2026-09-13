@@ -15,6 +15,7 @@ import { ClassificationChip } from '@components/objects/classification_chip';
 import { FlagChip } from '@components/objects/flag_chip';
 import { formatTimestamp, formatRA, formatDec } from '@utils/formatters';
 import { ErrorMessage } from '@components/general/error';
+import { HistoryTabs } from '@components/general/history_tabs';
 import { ObjectSyntheticImage } from '@components/images';
 import { MPCChip } from '@components/mpc/candidate_chip';
 // import { useDispatch, useSelector } from 'react-redux';
@@ -25,7 +26,7 @@ function StatRow({ label, value }: { label: string, value: React.ReactNode }) {
     return (
         <>
             <Typography variant='body2' color='text.secondary'>{label}</Typography>
-            <Typography variant='body1' sx={{ fontWeight: 'bold' }}>{value}</Typography>
+            <Typography variant='body1' sx={{ fontWeight: 900 }}>{value}</Typography>
         </>
     );
 }
@@ -152,6 +153,9 @@ export function ObjectDetailPage() {
         </Card>
             <Divider sx={{ width: '100%' }} />
 
+            <HistoryTabs target_type="object" target_key={object.natural_key} />
+
+            <Divider sx={{ width: '100%' }} />
 
             <Typography variant='subtitle2' color='text.secondary'>
                 {`Analyzed: ${formatTimestamp(object?.analysis_time)} UT | Observed: ${formatTimestamp(object?.obs_time)}`}

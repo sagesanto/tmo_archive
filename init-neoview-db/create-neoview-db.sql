@@ -1,1 +1,0 @@
-CREATE DATABASE neo_view

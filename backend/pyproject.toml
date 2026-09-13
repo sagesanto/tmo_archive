@@ -28,7 +28,8 @@ dependencies = [
     'html5lib',
     'uvicorn',
     'psycopg[binary]',
-    'apscheduler>=3,<4'
+    'apscheduler>=3,<4',
+    'alembic'
 ]
 
 
@@ -41,6 +42,8 @@ tmo-ingest-service = "ingest_service:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
+# namespaces default to true, so dirs without __init__ get installed as packages
+exclude = ["testing*", "thumbnails*", "migrations*"]
 
 [tool.setuptools]
 # loose top-level scripts, not packages -- must be listed explicitly

@@ -63,7 +63,7 @@ function MPCDetail() {
                         <TableRow>
                             <TableCell>Status</TableCell>
                             <TableCell>
-                                <Typography component="span" sx={{ fontWeight: 'bold', color: info.status_name === 'Confirmed' ? 'success.main' : 'error.main' }}>
+                                <Typography component="span" sx={{ fontWeight: 900, color: info.status_name === 'Confirmed' ? 'success.main' : 'error.main' }}>
                                     {info.status_name}
                                 </Typography>
                             </TableCell>

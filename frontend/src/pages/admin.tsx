@@ -67,7 +67,7 @@ function JobRow({ job }: { job: IngestJob }) {
     return (
         <TableRow>
             <TableCell>
-                <Typography component="span" sx={{ fontWeight: 'bold', color: STATUS_COLOR[job.status] ?? 'text.primary' }}>
+                <Typography component="span" sx={{ fontWeight: 900, color: STATUS_COLOR[job.status] ?? 'text.primary' }}>
                     {job.status}
                 </Typography>
             </TableCell>

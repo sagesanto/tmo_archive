@@ -167,7 +167,7 @@ export function PageFrame() {
                 <Stack direction="row" spacing={2} sx={{ alignItems: 'center', backgroundColor: (theme) => theme.palette.primary.main, width: '100%' }}>
                     <Warning sx={{ fontSize: (theme) => theme.typography.h5.fontSize, color: 'primary.contrastText' }} />
                     <Typography variant='h5' sx={{ color: 'primary.contrastText',  lineHeight: 1, m: 0 }}>  Alpha Version </Typography>
-                    <Typography variant='body1' sx={{ color: 'primary.contrastText', fontWeight: 'normal' }}>
+                    <Typography variant='body1' sx={{ color: 'primary.contrastText' }}>
                         {"This is an alpha version containing bugs and incomplete features. NEOView's stable form may look and feel different from this prototype. Feedback (More > Feedback) is strongly desired."}
                     </Typography>
                 </Stack>

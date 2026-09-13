@@ -1,5 +1,6 @@
 # history of what happened to an entity
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
@@ -7,6 +8,7 @@ from db.database import get_session
 from db.models import AuditEvent
 from app.schemas import AuditEventOut
 from core.flag_inherit import ancestor_keys
+from core.flag_ops import USER_ACTOR
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
@@ -33,3 +35,22 @@ def list_events(
         .offset(offset)
     )
     return db.execute(stmt).scalars().all()
+
+
+class NoteUpdate(BaseModel):
+    note: str | None = None
+
+
+@router.patch("/{event_id}", response_model=AuditEventOut)
+def update_note(event_id: int, body: NoteUpdate, db: Session = Depends(get_session)):
+    # only notes on a person's own actions are editable. what a classifier recorded is its
+    # evidence for the decision, so it stays as written
+    event = db.get(AuditEvent, event_id)
+    if event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+    if event.actor != USER_ACTOR:
+        raise HTTPException(status_code=400, detail=f"This event was recorded by {event.actor} and its note cannot be edited")
+
+    event.note = (body.note or "").strip() or None
+    db.flush()
+    return event

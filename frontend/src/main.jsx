@@ -1,5 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+// self-hosted so rendering doesn't depend on what each machine happens to have installed
+import '@fontsource/roboto-condensed/400.css'
+import '@fontsource/roboto-condensed/400-italic.css'
+import '@fontsource/roboto-condensed/500.css'
+import '@fontsource/roboto-condensed/700.css'
+import '@fontsource/roboto-condensed/900.css'
 import './index.css'
 import {
 	useQuery,

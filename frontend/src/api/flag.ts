@@ -43,6 +43,7 @@ export function getEntityFlags(target: EntityTarget, enabled: boolean = true) {
 function invalidateObjectFlags(queryClient: ReturnType<typeof useQueryClient>, object_key: string) {
     queryClient.invalidateQueries({ queryKey: ["object", object_key] });
     queryClient.invalidateQueries({ queryKey: ["objects"] });
+    queryClient.invalidateQueries({ queryKey: ["audit"] });  // the change is logged
 }
 
 // an entity flag changes what every descendant object carries, so every object query is stale
@@ -51,6 +52,7 @@ function invalidateEntityFlags(queryClient: ReturnType<typeof useQueryClient>, t
     queryClient.invalidateQueries({ queryKey: ["object"] });
     queryClient.invalidateQueries({ queryKey: ["objects"] });
     queryClient.invalidateQueries({ queryKey: ["objects_count"] });
+    queryClient.invalidateQueries({ queryKey: ["audit"] });  // descendants' histories include this event
 }
 
 export function useAddFlagToEntity() {

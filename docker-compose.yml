@@ -8,7 +8,6 @@ services:
       POSTGRES_DB: neo_view
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init-neoview-db:/docker-entrypoint-initdb.d
     ports:
       - "127.0.0.1:5433:5432"
     healthcheck:
@@ -16,6 +15,19 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # one-shot: brings the schema to head before anything touches the db
+  migrate:
+    build:
+      context: ./backend
+      target: base
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/neo_view
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
 
   api:
     build:
@@ -30,6 +42,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: always
 
   ingest:
@@ -48,6 +62,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     restart: always
 
   frontend:
