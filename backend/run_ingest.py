@@ -80,10 +80,11 @@ def main():
     with open(args.config) as f:
         config = json.load(f)
 
+    logger = configure_logger("ingest")  # configure before rebuilding to avoid overwrite by alembic logger
     if args.rebuild:
         reset_db(full=args.full)
 
-    logger = configure_logger("ingest")
+    logger.info("running ingest")
     run_full_ingest(config, logger)
 
 if __name__ == "__main__":

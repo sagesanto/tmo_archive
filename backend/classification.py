@@ -1,25 +1,12 @@
-import sys, os
-from os.path import dirname, exists, getmtime, getsize, join, abspath
-import glob
-from datetime import datetime, timezone
-from typing import Optional, Tuple
-import numpy as np
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
-from obs.calibs import is_bias, is_dark, is_flat, is_science
-from obs.metadata import MetadataDat, MetadataDB, get_obs_details, read_schedule
-from db.database import get_record_db, reset_db
-from db.models import FitsFile, MPCEncounter, MPCCandidate, MPCStatus, Observation, Tag, ObservationTag, Schedule, MetadataDBRecord as RecordMetadataDB
-from core.keys import obs_key
+from db.database import get_record_db
+from db.models import MPCEncounter, MPCCandidate, MPCStatus, Observation, Tag, ObservationTag
 from core.config import get_config
-from sqlalchemy import select, exists, func, or_, delete
-from sqlalchemy.orm import Session
-from collections import defaultdict
+from sqlalchemy import select
 
-from db.database import get_session
-from db.models import DetectedObject, AnalysisRun, Flag, ObjectFlag, EntityFlag
+from db.models import DetectedObject, AnalysisRun, Flag
 from core.flag_ops import add_entity_flag, add_object_flag, purge_object_flag, remove_entity_flag
-from app.schemas import DetectedObjectOverview
 
 tags: dict[str,Tag] = None
 
@@ -51,14 +38,14 @@ def detection_mag_classification(logger):
             .where(DetectedObject.magnitude > AnalysisRun.detection_limit_mag + excess_tolerance)
         )
         rows = db.execute(stmt).all()
-        logger.info(f"{len(rows)} objects are too dim")
+        n_too_dim = len(rows)
         newly_flagged = 0
         for obj, limit_mag in rows:
             note = f"mag {obj.magnitude:.2f}; limit {limit_mag:.2f}"
             newly_flagged += add_object_flag(db, obj.natural_key, too_dim_flag, "detection_threshold", note)
         db.flush()
 
-    logger.info(f"{newly_flagged} newly flagged")
+    logger.info(f"{n_too_dim} objects are too dim ({newly_flagged} newly flagged)")
     logger.info("Done detection threshold")
 
 def mpc_bad_classification(logger):

@@ -67,29 +67,18 @@ def thumbnails(natural_key: str = Query(), db: Session = Depends(get_session)):
 
 @router.get("/data")
 def blob_data(natural_key: str = Query(), db: Session = Depends(get_session)):
-    t0 = time.perf_counter()
     blob = db.execute(select(BlobRef).where(BlobRef.natural_key == natural_key)).scalars().one_or_none()
     if blob is None:
         raise HTTPException(status_code=404, detail="Blob not found")
-    t1 = time.perf_counter()
-    print(f"[blob_data] lookup blob record: {t1 - t0:.3f}s")
 
     results_path = to_container_path(blob.analysis_run.results_db.filename)  # host -> container path
     with SQLiteDB(results_path) as res_db:
-        t2 = time.perf_counter()
-        print(f"[blob_data] open sqlite db: {t2 - t1:.3f}s")
         row = locate_row_from_blob_record(blob, res_db)
-        t3 = time.perf_counter()
-        print(f"[blob_data] query row ({blob.width}x{blob.height}): {t3 - t2:.3f}s")
         if row is None or row.get("Data") is None:
             raise HTTPException(status_code=500, detail=f"Could not locate source data for blob {natural_key}")
         arr = blob_to_arr(row["Data"], blob.width, blob.height, blob.dtype)
-        t4 = time.perf_counter()
-        print(f"[blob_data] convert to array: {t4 - t3:.3f}s")
 
     buf = arr.astype("float32").tobytes()
-    t5 = time.perf_counter()
-    print(f"[blob_data] serialize to bytes: {t5 - t4:.3f}s | total: {t5 - t0:.3f}s")
     return Response(content=buf, media_type="application/octet-stream")
 
 

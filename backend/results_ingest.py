@@ -384,10 +384,3 @@ def ingest_results_db(results_path: str, logger, force_ingest: bool = False):
 
     with get_record_db() as db:
         gc_thumbnails(db)
-
-def main():
-    reset_db()
-    ingest_results_db("/home/sage/neo_view/backend/testing/NEO_20260516.db")
-    
-if __name__=="__main__":
-    main()

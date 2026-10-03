@@ -1,10 +1,9 @@
-from typing import Optional, Any
+from typing import Optional
 from datetime import datetime
 
 from sqlalchemy.sql import func
-from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, relationship, mapped_column as col
-from sqlalchemy.dialects.postgresql import JSONB, JSON
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint, Index, String, Integer, BigInteger, Float, Boolean, ForeignKey
 
 class Base(DeclarativeBase):

@@ -7,6 +7,7 @@ import json
 import sqlite3
 from pytz import timezone
 from datetime import datetime
+import logging
 
 from core.utils import parse_date_obs, write_date_obs
 from core.sqlite_db import SQLiteDB
@@ -15,6 +16,7 @@ from core.sqlite_db import SQLiteDB
 DAT_KEYWORDS = ['FILTER','RAWX','RAWY','Temperature','Sky','Focus']
 DB_KEYWORDS = ['Name','rowid','Description','ExposureTime','Frames','BinningSize','ROI_Width','ROI_Height','TelescopeRA','TelescopeDEC','ROI_StartX','ROI_StartY','Temperature','CameraName']
 
+logger = logging.getLogger(__name__)
 
 def parse_camera_param(value, value_type):
     try:
@@ -92,16 +94,17 @@ def read_schedule(fpath) -> tuple[list[dict],list[str]]:
 def find_schedule_line(obs_row,schedule:list[dict],time_tolerance_minutes=2):
     # find the line in a schedule text file that matches an observation pulled from the metadata db
 
-    name_match = [d for d in schedule if d['Target'] in obs_row['Name']]
+    obs_name = obs_row['Name']
+    name_match = [d for d in schedule if d['Target'] in obs_name]
     if not len(name_match):
-        # print('No schedule lines with matching name')
+        logger.debug('Unable to find schedule lines matching observation name {obs_name}')
         return None
 
     obs_ts = utc_obs_timestamp(obs_row)
     line_timestamps = np.array([parse_date_obs(d['DateTime']).timestamp() for d in name_match])
     time_match = [(d,t) for d,t in zip(name_match,line_timestamps) if abs(obs_ts-t)/60 < time_tolerance_minutes]
     if len(name_match) and len(time_match) == 0:
-        print(f"Found schedule line(s) with matching name but at the incorrect time for observation '{obs_row['Name']}'. Not keeping them.")
+        logger.debug(f"Found schedule line(s) with matching name but at the incorrect time for observation '{obs_name}'. Not keeping them.")
         return None    
     
     # find the line with closest matching time
@@ -132,7 +135,7 @@ def get_obs_details(obs_row:dict,db:MetadataDB,dat:MetadataDat=None,schedule:lis
         if dat_directory == db_directory:
             directory = db_directory
         else:
-            print(f'db directory ({db_directory}) and .dat directory ({dat_directory}) do not match. Assuming metadata db is correct.')
+            logger.warning(f'db directory ({db_directory}) and .dat directory ({dat_directory}) do not match. Assuming metadata db is correct.')
             directory = db_directory
             
     bin_name = abspath(join(directory,acq_bin_filename(obs_row)))
@@ -152,7 +155,7 @@ def get_obs_details(obs_row:dict,db:MetadataDB,dat:MetadataDat=None,schedule:lis
             if sched_line:
                 info['schedule_path'] = sched_line['path']
         except Exception as e:
-            print(f"WARN: error reading schedule for target {obs_row['Name']} in db {db.fname}: {e}")
+            logger.error(f"Error reading schedule for target {obs_row['Name']} in db {db.fname}: {e}")
             sched_line = None
         info['schedule_line'] = sched_line
     cam_params = db.find_cam_metadata(obs_row['rowid'])

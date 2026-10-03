@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-
+import logging
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
@@ -9,7 +9,7 @@ from db.database import DATABASE_URL
 from db.models import Base
 
 config = context.config
-if config.config_file_name is not None:
+if config.config_file_name is not None and not logging.getLogger().handlers:
     fileConfig(config.config_file_name)
 
 # resolved by db.database so host and container deployments share one path
